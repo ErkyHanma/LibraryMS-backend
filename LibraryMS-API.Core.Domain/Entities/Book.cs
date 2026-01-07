@@ -14,7 +14,7 @@
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         // Navegation properties
         public ICollection<BorrowRecord>? BorrowRecords { get; set; }

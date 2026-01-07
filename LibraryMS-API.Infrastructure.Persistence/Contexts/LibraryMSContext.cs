@@ -1,0 +1,24 @@
+﻿using LibraryMS_API.Core.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+
+namespace LibraryMS_API.Infrastructure.Persistence.Contexts
+{
+    public class LibraryMSContext : DbContext
+    {
+        public LibraryMSContext(DbContextOptions<LibraryMSContext> opt) : base(opt) { }
+
+        public DbSet<Book> Books { get; set; }
+        public DbSet<BorrowRecord> BorrowRecords { get; set; }
+        public DbSet<AccountRequest> AccountRequests { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        }
+    }
+}
