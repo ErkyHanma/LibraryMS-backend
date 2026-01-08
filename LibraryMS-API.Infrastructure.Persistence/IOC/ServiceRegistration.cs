@@ -1,4 +1,7 @@
-﻿using LibraryMS_API.Infrastructure.Persistence.Contexts;
+﻿using LibraryMS_API.Core.Domain.Interfaces.Repositories;
+using LibraryMS_API.Infrastructure.Persistence.Contexts;
+using LibraryMS_API.Infrastructure.Persistence.Repositories;
+using LibraryMS_API.Infrastructure.Persistence.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +37,14 @@ namespace LibraryMS_API.Infrastructure.Persistence.IOC
                     optionsLifetime: ServiceLifetime.Scoped
                 );
             }
+            #endregion
+
+
+            #region Repositories
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IBookRepository, BookRepository>();
+            services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
+            services.AddScoped<IAccountRequestRepository, AccountRequestRepository>();
             #endregion
 
 
