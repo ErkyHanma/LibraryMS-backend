@@ -2,6 +2,7 @@
 using LibraryMS_API.Core.Domain.Settings;
 using LibraryMS_API.Infrastructure.Identity.Contexts;
 using LibraryMS_API.Infrastructure.Identity.Entities;
+using LibraryMS_API.Infrastructure.Identity.Seeds;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -112,8 +113,23 @@ namespace LibraryMS_API.Infrastructure.Identity.IOC
             #endregion
 
 
+
         }
 
+        #region Seeds
+        public static async Task RunIdentitySeedAsync(this IServiceProvider service)
+        {
+            using var scope = service.CreateScope();
+            var servicesProvider = scope.ServiceProvider;
+
+            var userManager = servicesProvider.GetRequiredService<UserManager<User>>();
+            var roleManager = servicesProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            await DefaultRoles.SeedAsync(roleManager);
+            await DefaultAdminUser.SeedAsync(userManager);
+            await DefaultUser.SeedAsync(userManager);
+        }
+        #endregion
 
 
         #region Private methods

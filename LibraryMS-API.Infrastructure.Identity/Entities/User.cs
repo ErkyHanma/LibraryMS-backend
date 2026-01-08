@@ -6,7 +6,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Entities
     public class User : IdentityUser
     {
         public required string FullName { get; set; }
-        public int UniversityId { get; set; }
+        public required string UniversityId { get; set; }
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public DateTime JoinedAt { get; set; } // Date user was approved
     }
