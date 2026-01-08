@@ -17,7 +17,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Contexts.EntityConfiguration
             #region Property configurations
             builder.Property(ar => ar.Status)
                 .IsRequired()
-                .HasDefaultValue(AccountRequestStatus.PENDING);
+                .HasDefaultValue(AccountRequestStatus.Pending);
             builder.Property(ar => ar.RejectionReason)
                 .HasMaxLength(500)
                 .IsRequired(false);

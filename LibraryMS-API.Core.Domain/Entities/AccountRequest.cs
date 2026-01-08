@@ -6,7 +6,7 @@ namespace LibraryMS_API.Core.Domain.Entities
     {
         public int AccountRequestId { get; set; }
         public required string UserId { get; set; }
-        public AccountRequestStatus Status { get; set; } = AccountRequestStatus.PENDING;
+        public AccountRequestStatus Status { get; set; } = AccountRequestStatus.Pending;
         public string? RejectionReason { get; set; }
         public int? ReviewedBy { get; set; }
         public DateTime? ReviewedAt { get; set; }

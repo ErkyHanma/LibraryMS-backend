@@ -1,9 +1,11 @@
+using LibraryMS_API.Infrastructure.Identity.IOC;
 using LibraryMS_API.Infrastructure.Persistence.IOC;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddPersistenceLayerIoc(builder.Configuration);
+builder.Services.AddIdentityLayerIocForWebApi(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

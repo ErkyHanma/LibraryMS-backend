@@ -1,10 +1,10 @@
 ﻿namespace LibraryMS_API.Core.Domain.Common.Enum
 {
-    public enum AccountRequestStatus
+    public enum UserStatus
     {
         Pending = 1,
         Approved = 2,
-        Rejected = 3
+        Blocked = 3
     }
 
 }
