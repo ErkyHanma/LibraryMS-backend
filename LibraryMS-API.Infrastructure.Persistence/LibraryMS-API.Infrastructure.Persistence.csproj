@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LibraryMS-API.Core.Application\LibraryMS-API.Core.Application.csproj" />
     <ProjectReference Include="..\LibraryMS-API.Core.Domain\LibraryMS-API.Core.Domain.csproj" />
+    <ProjectReference Include="..\LibraryMS-API.Infrastructure.Identity\LibraryMS-API.Infrastructure.Identity.csproj" />
   </ItemGroup>
 
 </Project>

@@ -125,9 +125,17 @@ namespace LibraryMS_API.Infrastructure.Persistence.Repositories.Base
 
         public virtual async Task<List<TEntity>?> AddRangeAsync(List<TEntity> entities)
         {
-            await _context.Set<TEntity>().AddRangeAsync(entities);
-            await _context.SaveChangesAsync();
-            return entities;
+            try
+            {
+                await _context.Set<TEntity>().AddRangeAsync(entities);
+                await _context.SaveChangesAsync();
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
         public virtual async Task<TEntity?> EditAsync(int id, TEntity entity)

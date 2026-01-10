@@ -1,7 +1,6 @@
 ﻿using LibraryMS_API.Core.Domain.Interfaces.Repositories;
 using LibraryMS_API.Infrastructure.Persistence.Contexts;
 using LibraryMS_API.Infrastructure.Persistence.Repositories;
-using LibraryMS_API.Infrastructure.Persistence.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +9,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.IOC
 {
     public static class ServiceRegistration
     {
-        public static void AddPersistenceLayerIoc(this IServiceCollection services, IConfiguration config)
+        public static void AddPersistenceLayerIOC(this IServiceCollection services, IConfiguration config)
         {
             #region Contexts
             if (config.GetValue<bool>("UseInMemoryDatabase"))
@@ -41,15 +40,46 @@ namespace LibraryMS_API.Infrastructure.Persistence.IOC
 
 
             #region Repositories
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            //services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IBookRepository, BookRepository>();
             services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
             services.AddScoped<IAccountRequestRepository, AccountRequestRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
+
             #endregion
 
 
         }
 
+        #region Seeds
 
+        private static readonly string[] Categories =
+        [
+            "Science Fiction",
+            "Fantasy",
+            "Programming",
+            "Mathematics",
+            "Software Architecture",
+            "Education",
+            "Design",
+            "Psychology",
+            "Horror",
+            "Non-Fiction",
+            "Historical Fiction",
+            "Thriller",
+            "Biography",
+            "Self-Help"
+        ];
+
+        public static async Task RunLibrarySeedAsync(this IServiceProvider serviceProvider)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<LibraryMSContext>();
+
+            await DefaultCategory.SeedAsync(context, Categories);
+        }
+
+        #endregion
     }
 }

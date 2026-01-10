@@ -22,9 +22,6 @@ namespace LibraryMS_API.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.Property(b => b.Author)
                 .HasMaxLength(100);
 
-            builder.Property(b => b.Categories)
-                .HasMaxLength(200);
-
             builder.Property(b => b.Description)
                 .HasMaxLength(1000);
 

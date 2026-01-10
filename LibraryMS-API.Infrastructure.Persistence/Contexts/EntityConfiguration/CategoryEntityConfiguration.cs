@@ -4,24 +4,36 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LibraryMS_API.Infrastructure.Persistence.Contexts.EntityConfiguration
 {
-    public class BorrowRecordEntityConfiguration : IEntityTypeConfiguration<BorrowRecord>
+    public class CategoryEntityConfiguration : IEntityTypeConfiguration<Category>
     {
-        public void Configure(EntityTypeBuilder<BorrowRecord> builder)
+        public void Configure(EntityTypeBuilder<Category> builder)
         {
+
             #region Basic configuration
-            builder.HasKey(br => br.BorrowRecordId);
-            builder.ToTable("BorrowRecords");
+            builder.ToTable("Categories");
+            builder.HasKey(c => c.CategoryId);
             #endregion
 
             #region Property configurations
+            builder.Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(255);
 
+            builder.HasIndex(c => c.Name)
+                .IsUnique();
             #endregion
 
-            #region Relationshipsz
+            #region Relationships
             #endregion
 
             #region Indexes
             #endregion
+
+
+
+
+
+
         }
     }
 }

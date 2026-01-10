@@ -8,9 +8,9 @@ namespace LibraryMS_API.Core.Domain.Entities
         public required string UserId { get; set; }
         public AccountRequestStatus Status { get; set; } = AccountRequestStatus.Pending;
         public string? RejectionReason { get; set; }
-        public int? ReviewedBy { get; set; }
+        public string? ReviewedBy { get; set; }
         public DateTime? ReviewedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
