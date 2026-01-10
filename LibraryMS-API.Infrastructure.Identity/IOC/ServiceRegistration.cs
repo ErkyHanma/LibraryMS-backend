@@ -1,8 +1,10 @@
 ﻿using LibraryMS_API.Core.Application.Dtos.Auth;
+using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Settings;
 using LibraryMS_API.Infrastructure.Identity.Contexts;
 using LibraryMS_API.Infrastructure.Identity.Entities;
 using LibraryMS_API.Infrastructure.Identity.Seeds;
+using LibraryMS_API.Infrastructure.Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -109,7 +111,8 @@ namespace LibraryMS_API.Infrastructure.Identity.IOC
 
 
             #region Services
-
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAuthService, AuthService>();
             #endregion
 
 
