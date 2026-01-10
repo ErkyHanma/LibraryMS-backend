@@ -9,17 +9,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Http" Version="8.1.1" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
+    <PackageReference Include="System.Text.Json" Version="9.0.11" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LibraryMS-API.Core.Application\LibraryMS-API.Core.Application.csproj" />
     <ProjectReference Include="..\LibraryMS-API.Infrastructure.Identity\LibraryMS-API.Infrastructure.Identity.csproj" />
     <ProjectReference Include="..\LibraryMS-API.Infrastructure.Persistence\LibraryMS-API.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\LibraryMS-API.Infrastructure.Shared\LibraryMS-API.Infrastructure.Shared.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,62 @@
 @LibraryMS_API.WebApi_HostAddress = http://localhost:5075
 
-GET {{LibraryMS_API.WebApi_HostAddress}}/weatherforecast/
+// -----------------------
+// BOOKS ENDPOINTS
+// -----------------------
+
+GET {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books?page=1&limit=3&search=clean
 Accept: application/json
 
 ###
+
+GET {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books/9
+Accept: application/json
+
+###
+
+GET {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books/category/8
+Accept: application/json
+
+###
+
+POST {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books
+Accept: application/json
+Content-Type: application/json
+{
+  "title": "Dirty Architecture",
+  "author": "Robert E. Martin",
+  "categoryIds": [8, 9],
+  "description": "A comprehensive guide to building maintainable and scalable software systems using clean architecture principles.",
+  "summary": "Explains how to design software with clear separation of concerns and long-term maintainability.",
+  "pages": 412,
+  "publishDate": "2017-09-20T00:00:00Z",
+  "coverUrl": "https://example.com/images/clean-architecture.jpg",
+  "totalCopies": 10,
+  "availableCopies": 10
+}
+
+###
+
+POST {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books/9
+Accept: application/json
+Content-Type: application/json
+{
+  "BookId": 9,
+  "title": "Clean Architecture 3",
+  "author": "Robert C. Martin",
+  "categoryIds": [4, 6],
+  "description": "A comprehensive guide to building maintainable and scalable software systems using clean architecture principles.",
+  "summary": "Explains how to design software with clear separation of concerns and long-term maintainability.",
+  "pages": 432,
+  "publishDate": "2017-09-20T00:00:00Z",
+  "coverUrl": "https://example.com/images/clean-architecture.jpg",
+  "totalCopies": 10,
+  "availableCopies": 10
+}
+
+
+###
+
+DELETE {{LibraryMS_API.WebApi_HostAddress}}/api/v1/books/10
+Accept: application/json
+   

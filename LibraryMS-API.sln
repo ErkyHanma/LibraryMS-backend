@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryMS-API.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryMS-API.Infrastructure.Persistence", "LibraryMS-API.Infrastructure.Persistence\LibraryMS-API.Infrastructure.Persistence.csproj", "{2D0F404E-AC60-4EED-B8AC-BC06D371B942}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryMS-API.Infrastructure.Shared", "LibraryMS-API.Infrastructure.Shared\LibraryMS-API.Infrastructure.Shared.csproj", "{863BD666-D325-4454-BD0F-C02ED7209391}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{2D0F404E-AC60-4EED-B8AC-BC06D371B942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D0F404E-AC60-4EED-B8AC-BC06D371B942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D0F404E-AC60-4EED-B8AC-BC06D371B942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{863BD666-D325-4454-BD0F-C02ED7209391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{863BD666-D325-4454-BD0F-C02ED7209391}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{863BD666-D325-4454-BD0F-C02ED7209391}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{863BD666-D325-4454-BD0F-C02ED7209391}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{63428128-46EF-4C74-9F41-080720AE8607} = {2C862278-37DC-4DB0-BF69-D2ECCA02E21F}
 		{B25EE617-6E7F-4BB3-B8F5-CFEB7AE037DD} = {ACAAD93F-3726-4386-A615-78E311193E00}
 		{2D0F404E-AC60-4EED-B8AC-BC06D371B942} = {ACAAD93F-3726-4386-A615-78E311193E00}
+		{863BD666-D325-4454-BD0F-C02ED7209391} = {ACAAD93F-3726-4386-A615-78E311193E00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1B911AF7-4F88-40A3-B7A7-51852567F03E}
