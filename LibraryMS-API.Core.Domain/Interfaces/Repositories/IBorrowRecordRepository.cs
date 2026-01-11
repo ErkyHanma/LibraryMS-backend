@@ -5,5 +5,6 @@ namespace LibraryMS_API.Core.Domain.Interfaces.Repositories
 {
     public interface IBorrowRecordRepository : IGenericRepository<BorrowRecord>
     {
+        Task<bool> ReturnBorrowedRecordAsync(int borrowedRecordId);
     }
 }
