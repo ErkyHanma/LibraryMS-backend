@@ -2,7 +2,6 @@
 {
     public class EditBookDto
     {
-        public int BookId { get; set; }
         public required string Title { get; set; }
         public required string Author { get; set; }
         public required List<int> CategoryIds { get; set; } = [];

@@ -20,13 +20,14 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBooks(
             [FromQuery] string? search,
-            [FromQuery] int? categoryId,
+            [FromQuery] string? category,
+            [FromQuery] string? order,
             [FromQuery] bool? isAvailable,
             [FromQuery] int page,
             [FromQuery] int limit
             )
         {
-            var books = await _bookService.GetAllAsync(search, categoryId, isAvailable, page, limit);
+            var books = await _bookService.GetAllAsync(search, category, order, isAvailable, page, limit);
             return Ok(books);
         }
 
@@ -68,8 +69,8 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         }
 
 
-        [HttpPost()]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddBook([FromBody] AddBookDto dto)
@@ -81,7 +82,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
                 return BadRequest("Failed to add book.");
             }
 
-            return Ok(addedBook);
+            return StatusCode(StatusCodes.Status201Created, addedBook);
 
         }
 

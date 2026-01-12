@@ -19,7 +19,10 @@ namespace LibraryMS_API.Core.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PaginatedResult<BookDto>> GetAllAsync(string? searchTerm, int? categoryId = null, bool? isAvailable = false, int page = 1, int limit = 10)
+        public async Task<PaginatedResult<BookDto>> GetAllAsync(
+            string? searchTerm, string? category,
+            string? order = "desc", bool? isAvailable = false,
+            int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -28,9 +31,13 @@ namespace LibraryMS_API.Core.Application.Services
 
             var query = _bookRepository.GetAllQueryWithInclude(["BookCategories.Category"]);
 
-            // Filter by categoryId
-            if (categoryId.HasValue)
-                query = query.Where(b => b.BookCategories != null && b.BookCategories.Any(bc => bc.CategoryId == categoryId.Value));
+            // Filter by category name
+            if (!string.IsNullOrEmpty(category))
+            {
+                query = query.Where(b => b.BookCategories != null &&
+                        b.BookCategories.Any(bc => bc.Category != null &&
+                            bc.Category.Name.ToLower().Contains(category.ToLower())));
+            }
 
             // Filter by availability
             if (isAvailable == true)
@@ -38,16 +45,22 @@ namespace LibraryMS_API.Core.Application.Services
 
             // Search by title and author
             if (!string.IsNullOrEmpty(searchTerm))
+            {
                 query = query.Where(b =>
                 b.Title.ToLower().Contains(searchTerm.ToLower()) ||
                 b.Author.ToLower().Contains(searchTerm.ToLower()));
+            }
 
 
-            // Apply ordering 
-            query = query.OrderByDescending(c => c.CreatedAt);
-
+            // Get total count for pagination
             var total = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(total / (double)limit);
+
+            // Apply ordering 
+            query = order?.ToLower() == "asc"
+                 ? query.OrderBy(c => c.CreatedAt)
+                 : query.OrderByDescending(c => c.CreatedAt);
+
 
             var items = await query
                 .Skip((page - 1) * limit)
@@ -113,6 +126,7 @@ namespace LibraryMS_API.Core.Application.Services
         public async Task<BookDto?> EditAsync(int id, EditBookDto dto)
         {
             Book book = _mapper.Map<Book>(dto);
+            book.BookId = id;
             Book? updatedBook = await _bookRepository.EditBookWithCategories(book, id, dto.CategoryIds);
 
             if (updatedBook == null)

@@ -23,10 +23,11 @@ namespace LibraryMS_API.WebApi.Controllers.v1
             [FromQuery] int page,
             [FromQuery] int limit,
             [FromQuery] string? search,
-            [FromQuery] string? status)
+            [FromQuery] string? status,
+            [FromQuery] string? order)
 
         {
-            var dtoList = await _borrowRecordService.GetAllAsync(search, status, page, limit);
+            var dtoList = await _borrowRecordService.GetAllAsync(search, status, order, page, limit);
             return Ok(dtoList);
 
         }
@@ -40,10 +41,11 @@ namespace LibraryMS_API.WebApi.Controllers.v1
             [FromQuery] int page,
             [FromQuery] int limit,
             [FromQuery] string? search,
-            [FromQuery] string? status)
+            [FromQuery] string? status,
+            [FromQuery] string? order)
 
         {
-            var dtoList = await _borrowRecordService.GetAllByUserIdAsync(userId, search, status, page, limit);
+            var dtoList = await _borrowRecordService.GetAllByUserIdAsync(userId, search, status, order, page, limit);
             return Ok(dtoList);
         }
 
