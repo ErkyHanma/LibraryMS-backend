@@ -24,6 +24,7 @@ namespace LibraryMS_API.Core.Application.Mappings
 
             CreateMap<Book, EditBookDto>()
                 .ReverseMap()
+                .ForMember(dest => dest.BookId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore())
                 .ForMember(dest => dest.BorrowRecords, opt => opt.Ignore());

@@ -31,6 +31,7 @@
 
             CreateMap<BorrowRecord, EditBorrowRecordDto>()
                 .ReverseMap()
+                .ForMember(dest => dest.BorrowRecordId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.Book, opt => opt.Ignore());
         }

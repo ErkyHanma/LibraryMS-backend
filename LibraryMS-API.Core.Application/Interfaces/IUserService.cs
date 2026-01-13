@@ -1,16 +1,18 @@
 ﻿using LibraryMS_API.Core.Application.Dtos.Base;
 using LibraryMS_API.Core.Application.Dtos.User;
+using LibraryMS_API.Core.Domain.Common.Enum;
 
 namespace LibraryMS_API.Core.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<bool> ApproveUser(string id);
-        Task<bool> BlockUser(string id);
+        Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
+        Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
+        Task<UserDto?> GetByEmail(string email);
+        Task<UserDto?> GetById(string Id);
+        Task<UserProfileDto?> GetProfileById(string Id);
+        Task<bool> ChangeStatus(string id, UserStatus status);
+        Task<bool> ChangeRole(string id, Roles role);
         Task DeleteAsync(string id);
-        Task<List<UserDto>> GetAllUser(bool? IsApproved = true);
-        Task<PaginatedResult<UserDto>> GetAllUserWithPagination(int pageNumber = 1, int pageSize = 10);
-        Task<UserDto?> GetUserByEmail(string email);
-        Task<UserDto?> GetUserById(string Id);
     }
 }

@@ -46,6 +46,7 @@ namespace LibraryMS_API.WebApi.Handlers
                     break;
                 default:
                     httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    details = "Please try again later or contact support if the problem persists";
                     break;
             }
 

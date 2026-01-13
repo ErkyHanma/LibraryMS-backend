@@ -3,6 +3,7 @@ using LibraryMS_API.Core.Application.Dtos.User;
 using LibraryMS_API.Core.Application.Exceptions;
 using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Common.Enum;
+using LibraryMS_API.Core.Domain.Interfaces.Repositories;
 using LibraryMS_API.Infrastructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,26 +14,137 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
+        private readonly IBorrowRecordRepository _borrowRecordRepository;
 
         public UserService(
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IBorrowRecordRepository borrowRecordRepository)
         {
             _userManager = userManager;
+            _borrowRecordRepository = borrowRecordRepository;
         }
 
-
-        public async Task<List<UserDto>> GetAllUser(bool? IsApproved = true)
+        // Get all users with optional search, sorting, filtering and pagination
+        public async Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? order = "asc", bool? isApproved = true, int page = 1, int limit = 10)
         {
-            List<UserDto> listUsersDtos = [];
+            // Validate parameters
+            if (page < 1) page = 1;
+            if (limit < 1) limit = 10;
+            if (limit > 100) limit = 100;
 
             var users = _userManager.Users;
 
-            if (IsApproved != null && IsApproved == true)
-            {
+            if (isApproved != null && isApproved == true)
                 users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
+
+
+            // Search users by FullName, Email, UniversityId
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users.Where(u =>
+                    u.FullName.ToLower().Contains(search.ToLower()) ||
+                    u.Email!.ToLower().Contains(search.ToLower()) ||
+                    u.UniversityId.ToLower().Contains(search.ToLower())
+                );
             }
 
-            var listUser = await users.ToListAsync();
+
+            // Get total count for pagination
+            var total = await users.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)limit);
+
+            // Apply ordering
+            users = order?.ToLower() == "asc"
+               ? users.OrderBy(c => c.JoinedAt)
+               : users.OrderByDescending(c => c.JoinedAt);
+
+
+            var listUser = await users
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToListAsync();
+
+            List<UserDto> listUsersDtos = [];
+
+
+            foreach (var user in listUser)
+            {
+                var roleString = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+                if (!Enum.TryParse<Roles>(roleString, out var role))
+                {
+                    throw new Exception($"Invalid role '{roleString}'");
+                }
+
+
+                listUsersDtos.Add(new UserDto()
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    Email = user.Email ?? "",
+                    ProfileImageUrl = user.ProfileImageUrl ?? "",
+                    UniversityId = user.UniversityId,
+                    Status = user.Status,
+                    CreatedAt = user.CreatedAt,
+                    JoinedAt = user.JoinedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    Role = role,
+                });
+            }
+
+            return new PaginatedResult<UserDto>
+            {
+                Data = listUsersDtos,
+                Meta = new PageMetadata
+                {
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPage = totalPages
+                }
+            };
+        }
+
+        // Get all users with their borrowed record count. With optional search, sorting, filtering and pagination
+        public async Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", bool? isApproved = true, int page = 1, int limit = 10)
+        {
+            // Validate parameters
+            if (page < 1) page = 1;
+            if (limit < 1) limit = 10;
+            if (limit > 100) limit = 100;
+
+            var users = _userManager.Users;
+
+            if (isApproved != null && isApproved == true)
+                users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
+
+
+            // Search users by FullName, Email, UniversityId
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users.Where(u =>
+                    u.FullName.ToLower().Contains(search.ToLower()) ||
+                    u.Email!.ToLower().Contains(search.ToLower()) ||
+                    u.UniversityId.ToLower().Contains(search.ToLower())
+                );
+            }
+
+
+            // Get total count for pagination
+            var total = await users.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)limit);
+
+            // Apply ordering
+            users = order?.ToLower() == "asc"
+               ? users.OrderBy(c => c.JoinedAt)
+               : users.OrderByDescending(c => c.JoinedAt);
+
+
+            var listUser = await users
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToListAsync();
+
+            List<UserListDto> listUsersDtos = [];
 
             foreach (var item in listUser)
             {
@@ -44,8 +156,11 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                     throw new Exception($"Invalid role '{roleString}'");
                 }
 
+                var borrowedBooksCount = await _borrowRecordRepository
+                    .GetAllQuery().Where(br => br.UserId == item.Id).CountAsync();
 
-                listUsersDtos.Add(new UserDto()
+
+                listUsersDtos.Add(new UserListDto()
                 {
                     Id = item.Id,
                     FullName = item.FullName,
@@ -57,70 +172,24 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                     JoinedAt = item.JoinedAt,
                     UpdatedAt = item.UpdatedAt,
                     Role = role,
+                    BorrowedBooksCount = borrowedBooksCount
                 });
             }
 
-            return listUsersDtos;
+            return new PaginatedResult<UserListDto>
+            {
+                Data = listUsersDtos,
+                Meta = new PageMetadata
+                {
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPage = totalPages
+                }
+            };
         }
 
-        public IQueryable<User> GetAllUserQuery()
-        {
-            return _userManager.Users;
-        }
-
-        //public virtual async Task<PaginatedResult<UserDto>> GetAllUserWithPagination(int pageNumber = 1, int pageSize = 10)
-        //{
-        //    List<UserDto> listUsersDtos = new();
-        //    var skipNumber = (pageNumber - 1) * pageSize;
-
-        //    int totalCount;
-        //    IEnumerable<User> pagedUsers;
-
-
-        //    var query = _userManager.Users.OrderByDescending(u => u.CreatedAt);
-        //    totalCount = await query.CountAsync();
-        //    pagedUsers = await query.Skip(skipNumber).Take(pageSize).ToListAsync();
-
-        //    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        //    foreach (var user in pagedUsers)
-        //    {
-        //        var rolesList = await _userManager.GetRolesAsync(user);
-        //        var roleString = rolesList.FirstOrDefault();
-
-        //        if (!Enum.TryParse<Roles>(roleString, out var role))
-        //        {
-        //            throw new Exception($"Invalid role '{roleString}'");
-        //        }
-
-        //        listUsersDtos.Add(new UserDto()
-        //        {
-        //            Id = user.Id,
-        //            FullName = user.FullName,
-        //            Email = user.Email ?? "",
-        //            ProfileImageUrl = user.ProfileImageUrl ?? "",
-        //            UniversityId = user.UniversityId,
-        //            Status = user.Status,
-        //            CreatedAt = user.CreatedAt,
-        //            JoinedAt = user.JoinedAt,
-        //            UpdatedAt = user.UpdatedAt,
-        //            Role = role,
-        //        });
-
-        //    }
-
-
-        //    var result = new PaginatedResult<UserDto>()
-        //    {
-        //        Items = listUsersDtos,
-        //        TotalPages = totalPages,
-        //        CurrentPage = pageNumber,
-        //    };
-
-        //    return result;
-        //}
-
-        public async Task<UserDto?> GetUserById(string Id)
+        public async Task<UserDto?> GetById(string Id)
         {
             var user = await _userManager.FindByIdAsync(Id);
 
@@ -155,7 +224,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             return userDto;
         }
 
-        public async Task<UserDto?> GetUserByEmail(string email)
+        public async Task<UserDto?> GetByEmail(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
@@ -185,6 +254,44 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 UpdatedAt = user.UpdatedAt,
                 Role = role,
             };
+
+            return userDto;
+        }
+
+        public async Task<UserProfileDto?> GetProfileById(string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id);
+
+            if (user == null)
+                return null;
+
+            var rolesList = await _userManager.GetRolesAsync(user);
+            var roleString = rolesList.FirstOrDefault();
+
+            if (!Enum.TryParse<Roles>(roleString, out var role))
+            {
+                throw new Exception($"Invalid role '{roleString}'");
+            }
+
+            var borrowedRecords = _borrowRecordRepository.GetAllQuery().Where(br => br.UserId == user.Id);
+
+            var userDto = new UserProfileDto()
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email ?? "",
+                ProfileImageUrl = user.ProfileImageUrl ?? "",
+                UniversityId = user.UniversityId,
+                Status = user.Status,
+                JoinedAt = user.JoinedAt,
+                Role = role,
+                TotalBorrowed = await borrowedRecords.CountAsync(),
+                CurrentlyActive = await borrowedRecords.Where(br => br.ReturnDate == null).CountAsync(),
+                OverdueBooks = await borrowedRecords
+                    .Where(br => br.ReturnDate == null && br.DueDate < DateTime.UtcNow).CountAsync(),
+                MaxAllowedBooks = 5
+            };
+
 
             return userDto;
         }
@@ -226,6 +333,51 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             return false;
         }
 
+        public async Task<bool> ChangeRole(string id, Roles role)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return false;
+
+            // Remove existing roles
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            // Add new role
+            var result = await _userManager.AddToRoleAsync(user, role.ToString());
+            return result.Succeeded;
+        }
+
+        public async Task<bool> ChangeStatus(string id, UserStatus status)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+                return false;
+
+            switch (status)
+            {
+                case UserStatus.Approved:
+                    user.Status = UserStatus.Approved;
+                    user.LockoutEnabled = false;
+                    user.LockoutEnd = null;
+
+                    if (user.JoinedAt == null)
+                        user.JoinedAt = DateTime.UtcNow;
+                    break;
+
+                case UserStatus.Blocked:
+                    user.Status = UserStatus.Blocked;
+                    user.LockoutEnabled = true;
+                    user.LockoutEnd = DateTimeOffset.MaxValue;
+                    break;
+                default:
+                    return false;
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
 
         //public virtual async Task<EditUserResponseDto> EditUserAsync(EditUserDto dto, string? origin, bool? isCreated = false, bool? isApi = false)
         //{
@@ -368,7 +520,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
         //    }
         //}
 
-        public virtual async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
 
@@ -378,9 +530,5 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             await _userManager.DeleteAsync(user);
         }
 
-        public Task<PaginatedResult<UserDto>> GetAllUserWithPagination(int pageNumber = 1, int pageSize = 10)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

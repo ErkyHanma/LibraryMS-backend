@@ -81,7 +81,7 @@ namespace LibraryMS_API.Core.Application.Services
             foreach (var borrowRecord in items)
             {
                 // get for each borrow record the user information
-                var userDto = await _userService.GetUserById(borrowRecord.UserId);
+                var userDto = await _userService.GetById(borrowRecord.UserId);
 
                 var dto = new BorrowRecordDto
                 {
@@ -170,7 +170,7 @@ namespace LibraryMS_API.Core.Application.Services
             foreach (var borrowRecord in items)
             {
                 // get for each borrow record the user information
-                var userDto = await _userService.GetUserById(borrowRecord.UserId);
+                var userDto = await _userService.GetById(borrowRecord.UserId);
 
                 var dto = new BorrowRecordDto
                 {
@@ -211,7 +211,7 @@ namespace LibraryMS_API.Core.Application.Services
                 return null;
 
             // get the borrow record the user information
-            var userDto = await _userService.GetUserById(borrowRecord.UserId);
+            var userDto = await _userService.GetById(borrowRecord.UserId);
 
             var borrowRecordDto = new BorrowRecordDto
             {
@@ -231,6 +231,20 @@ namespace LibraryMS_API.Core.Application.Services
 
         public async Task<BorrowRecordDto?> AddBorrowRecordAsync(AddBorrowRecordDto dto)
         {
+            var MAX_USER_BORROW_LIMIT = 5;
+
+            // check if user exists
+            var userDto = await _userService.GetById(dto.UserId);
+            if (userDto == null)
+                throw ApiException.NotFound("User not found");
+
+            // check if the user can borrow another book
+            var userBorrowedRecordCount = await _borrowRecordRepository
+                .GetAllQuery().Where(br => br.UserId == dto.UserId && br.ReturnDate == null).CountAsync();
+
+            if (userBorrowedRecordCount >= MAX_USER_BORROW_LIMIT)
+                throw ApiException.BadRequest("User has reached the maximum borrow limit");
+
             // check if the user has already borrowed the book and not returned it yet
             var borrowedRecord = await _borrowRecordRepository
                 .GetAllQuery().FirstOrDefaultAsync(br => br.BookId == dto.BookId && br.UserId == dto.UserId && br.ReturnDate == null);
@@ -243,9 +257,6 @@ namespace LibraryMS_API.Core.Application.Services
 
             if (returnEntity == null)
                 return null;
-
-            // get borrow record user information
-            var userDto = await _userService.GetUserById(returnEntity.UserId);
 
             return new BorrowRecordDto
             {
