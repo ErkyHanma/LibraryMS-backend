@@ -19,8 +19,9 @@ namespace LibraryMS_API.Core.Application.Services
             _mapper = mapper;
         }
 
+        // Get all books with optional search, sorting, filtering and pagination
         public async Task<PaginatedResult<BookDto>> GetAllAsync(
-            string? searchTerm, string? category,
+            string? search, string? category,
             string? order = "desc", bool? isAvailable = false,
             int page = 1, int limit = 10)
         {
@@ -44,11 +45,11 @@ namespace LibraryMS_API.Core.Application.Services
                 query = query.Where(b => b.AvailableCopies > 0);
 
             // Search by title and author
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(b =>
-                b.Title.ToLower().Contains(searchTerm.ToLower()) ||
-                b.Author.ToLower().Contains(searchTerm.ToLower()));
+                b.Title.ToLower().Contains(search.ToLower()) ||
+                b.Author.ToLower().Contains(search.ToLower()));
             }
 
 

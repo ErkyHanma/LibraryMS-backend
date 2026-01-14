@@ -82,19 +82,18 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}/return")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ReturnBorrowRecord(int id)
         {
             var isSuccess = await _borrowRecordService.ReturnBorrowedRecordAsync(id);
-
             if (!isSuccess)
                 return BadRequest("Failed to return borrow record.");
 
-            return Ok();
-
+            return Ok(new { message = "Book returned successfully." });
         }
     }
 }

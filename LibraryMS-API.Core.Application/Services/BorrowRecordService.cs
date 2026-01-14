@@ -27,7 +27,7 @@ namespace LibraryMS_API.Core.Application.Services
         }
 
 
-        public async Task<PaginatedResult<BorrowRecordDto>> GetAllAsync(string? searchTerm, string? status, string? order = "desc", int page = 1, int limit = 10)
+        public async Task<PaginatedResult<BorrowRecordDto>> GetAllAsync(string? search, string? status, string? order = "desc", int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -54,11 +54,11 @@ namespace LibraryMS_API.Core.Application.Services
                 }
 
             // search by book title or author
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(br =>
-                    br.Book != null && (br.Book.Title.ToLower().Contains(searchTerm.ToLower()) ||
-                     br.Book.Author.ToLower().Contains(searchTerm.ToLower())));
+                    br.Book != null && (br.Book.Title.ToLower().Contains(search.ToLower()) ||
+                     br.Book.Author.ToLower().Contains(search.ToLower())));
             }
 
             // Get total 
@@ -113,7 +113,7 @@ namespace LibraryMS_API.Core.Application.Services
 
         }
 
-        public async Task<PaginatedResult<BorrowRecordDto>> GetAllByUserIdAsync(string userId, string? searchTerm, string? status, string? order = "desc", int page = 1, int limit = 10)
+        public async Task<PaginatedResult<BorrowRecordDto>> GetAllByUserIdAsync(string userId, string? search, string? status, string? order = "desc", int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -142,11 +142,11 @@ namespace LibraryMS_API.Core.Application.Services
                 }
 
             // search by book title or author
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(br =>
-                    br.Book != null && (br.Book.Title.ToLower().Contains(searchTerm.ToLower()) ||
-                     br.Book.Author.ToLower().Contains(searchTerm.ToLower())));
+                    br.Book != null && (br.Book.Title.ToLower().Contains(search.ToLower()) ||
+                     br.Book.Author.ToLower().Contains(search.ToLower())));
             }
 
             // Get total
