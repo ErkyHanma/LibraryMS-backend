@@ -2,7 +2,8 @@
 using LibraryMS_API.Core.Application.Dtos.Book;
 using LibraryMS_API.Core.Application.Dtos.Category;
 using LibraryMS_API.Core.Application.Interfaces;
-
+using LibraryMS_API.Core.Domain.Common.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMS_API.WebApi.Controllers.v1
@@ -19,6 +20,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         // GET
         [HttpGet]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllCategories()
@@ -29,6 +31,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         // GET
         [HttpGet("{id}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -46,6 +49,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CategoryDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -64,6 +68,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -79,6 +84,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

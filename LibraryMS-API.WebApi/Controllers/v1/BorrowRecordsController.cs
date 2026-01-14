@@ -1,6 +1,8 @@
 ﻿using Asp.Versioning;
 using LibraryMS_API.Core.Application.Dtos.BorrowRecord;
 using LibraryMS_API.Core.Application.Interfaces;
+using LibraryMS_API.Core.Domain.Common.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMS_API.WebApi.Controllers.v1
@@ -17,6 +19,8 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         // GET
         [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBorrowRecord(
@@ -34,6 +38,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         // GET
         [HttpGet("user/{userId}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBorrowRecordByUserId(
@@ -51,6 +56,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         // GET
         [HttpGet("{id}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBorrowRecordById(int id)
@@ -65,6 +71,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpPost]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -83,6 +90,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         }
 
         [HttpPatch("{id}/return")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

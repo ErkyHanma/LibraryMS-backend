@@ -1,9 +1,14 @@
-﻿using LibraryMS_API.Core.Application.Dtos.Dashboard;
+﻿using Asp.Versioning;
+using LibraryMS_API.Core.Application.Dtos.Dashboard;
 using LibraryMS_API.Core.Application.Interfaces;
+using LibraryMS_API.Core.Domain.Common.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMS_API.WebApi.Controllers.v1
 {
+    [ApiVersion("1.0")]
+    [Authorize(Roles = $"{nameof(Roles.Admin)}")]
     public class DashboardController : BaseController
     {
 

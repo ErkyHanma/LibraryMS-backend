@@ -32,5 +32,9 @@ namespace LibraryMS_API.Core.Application.Exceptions
         public static ApiException Forbidden(string message = "Access forbidden")
             => new(message, (int)HttpStatusCode.Forbidden);
 
+        public static ApiException InternalServerError(string message = "Access forbidden")
+          => new(message, (int)HttpStatusCode.InternalServerError);
+
+
     }
 }

@@ -2,6 +2,7 @@
 using LibraryMS_API.Core.Application.Dtos.User;
 using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Common.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMS_API.WebApi.Controllers.v1
@@ -18,6 +19,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpGet]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserListDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsers(
@@ -35,6 +37,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpGet("{id}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -49,6 +52,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         }
 
         [HttpGet("{id}/profile")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserProfileDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -64,6 +68,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpPatch("{id}/role")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,6 +90,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
 
         [HttpPatch("{id}/change-status")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

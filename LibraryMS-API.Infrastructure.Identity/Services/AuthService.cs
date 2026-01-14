@@ -4,6 +4,8 @@ using LibraryMS_API.Core.Application.Dtos.Email;
 using LibraryMS_API.Core.Application.Exceptions;
 using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Common.Enum;
+using LibraryMS_API.Core.Domain.Entities;
+using LibraryMS_API.Core.Domain.Interfaces.Repositories;
 using LibraryMS_API.Core.Domain.Settings;
 using LibraryMS_API.Infrastructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -24,18 +26,21 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
         private readonly JwtSettings _jwtSettings;
+        private readonly IAccountRequestRepository _accountRequestRepository;
 
 
         public AuthService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IOptions<JwtSettings> jwtSettings,
+            IAccountRequestRepository accountRequestRepository,
             IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtSettings = jwtSettings.Value;
             _emailService = emailService;
+            _accountRequestRepository = accountRequestRepository;
         }
 
 
@@ -47,7 +52,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
             if (user == null)
             {
-                throw ApiException.Conflict($"Email {loginDto.Email} is already taken.");
+                throw ApiException.Conflict($"User with email {loginDto.Email} is not registered.");
             }
 
             if (user.Status == UserStatus.Pending)
@@ -57,10 +62,10 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
             if (user.Status == UserStatus.Blocked)
             {
-                throw ApiException.Forbidden($"Account for user {user.FullName} is blocked. Please try again later.");
+                throw ApiException.Forbidden($"Account for user {user.Name + " " + user.LastName} is blocked. Please try again later.");
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user.Email ?? "", loginDto.Password, false, true);
+            var result = await _signInManager.PasswordSignInAsync(user.UserName ?? "", loginDto.Password, false, true);
 
             if (!result.Succeeded)
             {
@@ -69,10 +74,23 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
 
             JwtSecurityToken jwtSecurityToken = await GenerateJwtToken(user);
+            var roleString = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+
+            if (!Enum.TryParse<Roles>(roleString, out var role))
+                throw new Exception($"Invalid role '{roleString}'");
 
             LoginResponseDto response = new()
             {
-                FullName = user.FullName,
+                User = new AuthUserDto
+                {
+                    Id = user.Id ?? "",
+                    Name = user.Name,
+                    LastName = user.LastName,
+                    Email = user.Email ?? "",
+                    UniversityId = user.UniversityId,
+                    ProfileImageUrl = user.ProfileImageUrl ?? "",
+                    Role = role
+                },
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
             };
 
@@ -81,57 +99,93 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpDto dto)
         {
-            // Todo: Add unique UniversityId
-
-            var userWithSameEmail = await _userManager.FindByEmailAsync(dto.Email);
-            if (userWithSameEmail != null)
+            // Validate email availability
+            var existingUserByEmail = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUserByEmail != null)
             {
-                throw ApiException.Conflict($"Email {dto.Email} is already taken.");
+                throw ApiException.Conflict($"An account with the email '{dto.Email}' already exists.");
             }
 
-
-            User user = new()
+            // Validate university ID availability
+            var existingUserByUniversityId = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.UniversityId == dto.UniversityId);
+            if (existingUserByUniversityId != null)
             {
-                FullName = dto.FullName,
+                throw ApiException.Conflict(
+                    $"The university ID '{dto.UniversityId}' is already registered. " +
+                    "If this is your ID, please contact support or try logging in."
+                );
+            }
+
+            var newUser = new User
+            {
+                Name = dto.Name,
+                LastName = dto.LastName,
                 Email = dto.Email,
+                UserName = dto.Email,
                 Status = UserStatus.Pending,
                 UniversityId = dto.UniversityId,
                 EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
-
-
-            if (!result.Succeeded)
+            var createResult = await _userManager.CreateAsync(newUser, dto.Password);
+            if (!createResult.Succeeded)
             {
-                throw ApiException.Conflict($"Email {dto.Email} is already taken.");
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                throw ApiException.BadRequest($"Failed to create account: {errors}");
             }
 
-            await _userManager.AddToRoleAsync(user, Roles.User.ToString());
-
-            var rolesList = await _userManager.GetRolesAsync(user);
-
-            SignUpResponseDto response = new()
+            var roleResult = await _userManager.AddToRoleAsync(newUser, Roles.User.ToString());
+            if (!roleResult.Succeeded)
             {
-                Id = user.Id,
-                FullName = user.FullName,
-                Email = user.Email,
-                UniversityId = user.UniversityId,
-                Roles = rolesList.ToList()
+                throw ApiException.InternalServerError("Account created but failed to assign user role. Please contact support.");
+            }
 
+            // Create account request for admin approval
+            var accountRequest = new AccountRequest
+            {
+                UserId = newUser.Id,
+                Status = AccountRequestStatus.Pending,
             };
 
-            return response;
+            var createdRequest = await _accountRequestRepository.AddAsync(accountRequest);
+            if (createdRequest == null)
+            {
+                throw ApiException.InternalServerError(
+                    "Your account was created but the approval request failed. Please contact support."
+                );
+            }
 
+            // Send confirmation email
+            await _emailService.SendAsync(new EmailRequestDto
+            {
+                To = newUser.Email,
+                Subject = "Account Created - Pending Approval",
+                HtmlBody = $@"
+                    <h2>Welcome to the LibraryMS, {newUser.Name}!</h2>
+                    <p>Your account has been created successfully and is pending administrator approval.</p>
+                    <p>You will receive another email once your account has been approved.</p>
+                    <p><strong>University ID:</strong> {newUser.UniversityId}</p>
+                    <p>If you have any questions, please contact the library administration.</p>
+                "
+            });
+
+            var userRoles = await _userManager.GetRolesAsync(newUser);
+
+            return new SignUpResponseDto
+            {
+                Id = newUser.Id,
+                Name = newUser.Name,
+                LastName = newUser.LastName,
+                Email = newUser.Email,
+                UniversityId = newUser.UniversityId,
+                Roles = userRoles.ToList(),
+            };
 
         }
 
-        public async Task SignOutAsync()
-        {
-            await _signInManager.SignOutAsync();
-        }
-
-        public async Task ForgotPasswordAsync(ForgotPasswordRequestDto request)
+        public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request)
         {
             ForgotPasswordResponseDto response = new() { HasError = false, Errors = [] };
 
@@ -155,6 +209,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 HtmlBody = $"Please reset your password account use this token {resetToken}",
                 Subject = "Reset password"
             });
+
+            return response;
         }
 
         public async Task<ForgotPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
