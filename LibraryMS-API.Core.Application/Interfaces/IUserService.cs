@@ -8,6 +8,8 @@ namespace LibraryMS_API.Core.Application.Interfaces
     {
         Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
         Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
+
+        Task<int> GetTotalUserCountAsync();
         Task<UserDto?> GetByEmail(string email);
         Task<UserDto?> GetById(string Id);
         Task<UserProfileDto?> GetProfileById(string Id);

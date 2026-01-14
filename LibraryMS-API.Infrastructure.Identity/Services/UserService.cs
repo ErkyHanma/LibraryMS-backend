@@ -189,6 +189,10 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             };
         }
 
+        public async Task<int> GetTotalUserCountAsync()
+        {
+            return await _userManager.Users.CountAsync();
+        }
         public async Task<UserDto?> GetById(string Id)
         {
             var user = await _userManager.FindByIdAsync(Id);
@@ -294,43 +298,6 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
 
             return userDto;
-        }
-
-        public async Task<bool> ApproveUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-
-            if (user != null)
-            {
-                if (user.Status == UserStatus.Pending)
-                {
-                    user.Status = UserStatus.Approved;
-                    user.LockoutEnabled = false;
-                    user.LockoutEnd = null;
-                }
-
-                await _userManager.UpdateAsync(user);
-                return true;
-            }
-
-            return false;
-        }
-
-        public async Task<bool> BlockUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-
-            if (user != null)
-            {
-                user.Status = UserStatus.Blocked;
-                user.LockoutEnabled = true;
-                user.LockoutEnd = DateTimeOffset.MaxValue;
-
-                await _userManager.UpdateAsync(user);
-                return true;
-            }
-
-            return false;
         }
 
         public async Task<bool> ChangeRole(string id, Roles role)

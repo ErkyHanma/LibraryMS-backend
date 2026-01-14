@@ -18,6 +18,8 @@ namespace LibraryMS_API.Core.Application.IOC
             services.AddScoped<IBookService, BookService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IBorrowRecordService, BorrowRecordService>();
+            services.AddScoped<IAccountRequestService, AccountRequestService>();
+            services.AddScoped<IDashboardService, DashboardService>();
             #endregion
         }
     }
