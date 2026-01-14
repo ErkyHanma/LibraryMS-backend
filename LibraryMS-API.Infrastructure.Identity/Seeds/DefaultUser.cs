@@ -11,7 +11,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Seeds
         {
             var user = new User
             {
-                FullName = "Edward Elric",
+                Name = "Edward",
+                LastName = "Elric",
                 UserName = "DefaultUser",
                 Email = "user@example.com",
                 EmailConfirmed = true,

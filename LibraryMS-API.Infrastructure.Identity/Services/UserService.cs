@@ -38,11 +38,12 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
 
 
-            // Search users by FullName, Email, UniversityId
+            // Search users by name, lastname, email or universityId
             if (!string.IsNullOrWhiteSpace(search))
             {
                 users = users.Where(u =>
-                    u.FullName.ToLower().Contains(search.ToLower()) ||
+                    u.Name.ToLower().Contains(search.ToLower()) ||
+                    u.LastName.ToLower().Contains(search.ToLower()) ||
                     u.Email!.ToLower().Contains(search.ToLower()) ||
                     u.UniversityId.ToLower().Contains(search.ToLower())
                 );
@@ -79,7 +80,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 listUsersDtos.Add(new UserDto()
                 {
                     Id = user.Id,
-                    FullName = user.FullName,
+                    Name = user.Name,
+                    LastName = user.LastName,
                     Email = user.Email ?? "",
                     ProfileImageUrl = user.ProfileImageUrl ?? "",
                     UniversityId = user.UniversityId,
@@ -118,11 +120,12 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
 
 
-            // Search users by FullName, Email, UniversityId
+            // Search users by name, lastname, email or universityId
             if (!string.IsNullOrWhiteSpace(search))
             {
                 users = users.Where(u =>
-                    u.FullName.ToLower().Contains(search.ToLower()) ||
+                    u.Name.ToLower().Contains(search.ToLower()) ||
+                    u.LastName.ToLower().Contains(search.ToLower()) ||
                     u.Email!.ToLower().Contains(search.ToLower()) ||
                     u.UniversityId.ToLower().Contains(search.ToLower())
                 );
@@ -163,7 +166,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
                 listUsersDtos.Add(new UserListDto()
                 {
                     Id = item.Id,
-                    FullName = item.FullName,
+                    Name = item.Name,
+                    LastName = item.LastName,
                     Email = item.Email ?? "",
                     ProfileImageUrl = item.ProfileImageUrl ?? "",
                     UniversityId = item.UniversityId,
@@ -213,7 +217,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             var userDto = new UserDto()
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                Name = user.Name,
+                LastName = user.LastName,
                 Email = user.Email ?? "",
                 ProfileImageUrl = user.ProfileImageUrl ?? "",
                 UniversityId = user.UniversityId,
@@ -248,7 +253,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             var userDto = new UserDto()
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                Name = user.Name,
+                LastName = user.LastName,
                 Email = user.Email ?? "",
                 ProfileImageUrl = user.ProfileImageUrl ?? "",
                 UniversityId = user.UniversityId,
@@ -282,7 +288,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             var userDto = new UserProfileDto()
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                Name = user.Name,
+                LastName = user.LastName,
                 Email = user.Email ?? "",
                 ProfileImageUrl = user.ProfileImageUrl ?? "",
                 UniversityId = user.UniversityId,

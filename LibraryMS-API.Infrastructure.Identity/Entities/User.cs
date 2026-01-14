@@ -5,7 +5,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Entities
 {
     public class User : IdentityUser
     {
-        public required string FullName { get; set; }
+        public required string Name { get; set; }
+        public required string LastName { get; set; }
         public required string UniversityId { get; set; }
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public string? ProfileImageUrl { get; set; }

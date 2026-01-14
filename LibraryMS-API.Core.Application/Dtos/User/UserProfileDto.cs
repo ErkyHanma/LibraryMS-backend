@@ -5,7 +5,8 @@ namespace LibraryMS_API.Core.Application.Dtos.User
     public class UserProfileDto
     {
         public required string Id { get; set; }
-        public required string FullName { get; set; }
+        public required string Name { get; set; }
+        public required string LastName { get; set; }
         public required string Email { get; set; }
         public required string ProfileImageUrl { get; set; }
         public required Roles Role { get; set; }

@@ -5,7 +5,8 @@ namespace LibraryMS_API.Core.Application.Dtos.User
     public class UserListDto
     {
         public required string Id { get; set; }
-        public required string FullName { get; set; }
+        public required string Name { get; set; }
+        public required string LastName { get; set; }
         public required string Email { get; set; }
         public UserStatus Status { get; set; }
         public required string UniversityId { get; set; }

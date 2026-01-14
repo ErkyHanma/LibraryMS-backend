@@ -2,6 +2,7 @@
 {
     public class EditUserDto
     {
-        public required string FullName { get; set; }
+        public required string Name { get; set; }
+        public required string LastName { get; set; }
     }
 }
