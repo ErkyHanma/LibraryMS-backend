@@ -76,17 +76,17 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         [HttpPost]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
+        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AddBook([FromBody] AddBookDto dto)
+        public async Task<IActionResult> AddBook([FromForm] AddBookDto dto)
         {
             var addedBook = await _bookService.AddAsync(dto);
 
             if (addedBook == null)
-            {
                 return BadRequest("Failed to add book.");
-            }
+
 
             return StatusCode(StatusCodes.Status201Created, addedBook);
 
@@ -95,17 +95,16 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
         [HttpPost("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
+        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> EditBook(int id, [FromBody] EditBookDto dto)
+        public async Task<IActionResult> EditBook(int id, [FromForm] EditBookDto dto)
         {
             var editedBook = await _bookService.EditAsync(id, dto);
 
             if (editedBook == null)
-            {
                 return BadRequest("Failed to edit book.");
-            }
 
             return Ok(editedBook);
 

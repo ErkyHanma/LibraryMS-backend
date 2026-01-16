@@ -1,4 +1,6 @@
-﻿namespace LibraryMS_API.Core.Application.Dtos.Book
+﻿using Microsoft.AspNetCore.Http;
+
+namespace LibraryMS_API.Core.Application.Dtos.Book
 {
     public class AddBookDto
     {
@@ -9,7 +11,7 @@
         public required string Summary { get; set; }
         public int Pages { get; set; }
         public DateTime PublishDate { get; set; }
-        public required string CoverUrl { get; set; }
+        public required IFormFile CoverFile { get; set; }
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
     }

@@ -10,6 +10,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Entities
         public required string UniversityId { get; set; }
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public string? ProfileImageUrl { get; set; }
+        public string? ProfileImageKey { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public DateTime? JoinedAt { get; set; } // Date user was approved

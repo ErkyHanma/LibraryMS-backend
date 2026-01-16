@@ -142,6 +142,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Repositories.Base
         {
             try
             {
+
                 var entry = await _context.Set<TEntity>().FindAsync(id);
 
                 if (entry != null)

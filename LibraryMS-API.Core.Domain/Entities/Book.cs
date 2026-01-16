@@ -9,7 +9,8 @@
         public required string Summary { get; set; }
         public int Pages { get; set; }
         public DateTime PublishDate { get; set; }
-        public required string CoverUrl { get; set; }
+        public required string CoverImageUrl { get; set; }
+        public required string CoverImageKey { get; set; }
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

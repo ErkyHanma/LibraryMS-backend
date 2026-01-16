@@ -3,6 +3,7 @@ using System;
 using LibraryMS_API.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryMS_API.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(LibraryMSContext))]
-    partial class LibraryMSContextModelSnapshot : ModelSnapshot
+    [Migration("20260115025359_AddImageKeyFieldIntoBookTable")]
+    partial class AddImageKeyFieldIntoBookTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,7 +83,8 @@ namespace LibraryMS_API.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("CoverImageKey")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("CoverImageUrl")
                         .IsRequired()

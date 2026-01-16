@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using LibraryMS_API.Core.Application.Dtos.Base;
 using LibraryMS_API.Core.Application.Dtos.Book;
+using LibraryMS_API.Core.Application.Dtos.Image;
+using LibraryMS_API.Core.Application.Exceptions;
 using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Entities;
 using LibraryMS_API.Core.Domain.Interfaces.Repositories;
@@ -11,11 +13,13 @@ namespace LibraryMS_API.Core.Application.Services
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
 
-        public BookService(IBookRepository bookRepository, IMapper mapper)
+        public BookService(IBookRepository bookRepository, IMapper mapper, ICloudinaryService cloudinaryService)
         {
             _bookRepository = bookRepository;
+            _cloudinaryService = cloudinaryService;
             _mapper = mapper;
         }
 
@@ -114,27 +118,91 @@ namespace LibraryMS_API.Core.Application.Services
 
         public async Task<BookDto?> AddAsync(AddBookDto dto)
         {
-            Book entity = _mapper.Map<Book>(dto);
-            Book? returnEntity = await _bookRepository.AddBookWithCategories(entity, dto.CategoryIds);
 
-            if (returnEntity == null)
-                return null;
+            ImageUploadResultDto? newImage = null;
 
-            return _mapper.Map<BookDto>(returnEntity);
+            try
+            {
+                newImage = await _cloudinaryService.UploadImageAsync(dto.CoverFile, "LibraryMS/books/covers");
+
+                if (newImage == null)
+                    return null;
+
+                Book entity = _mapper.Map<Book>(dto);
+                entity.CoverImageUrl = newImage.FileImageUrl;
+                entity.CoverImageKey = newImage.FileImageKey;
+                Book? returnEntity = await _bookRepository.AddBookWithCategories(entity, dto.CategoryIds);
+
+
+                if (returnEntity == null)
+                {
+                    // Cleanup uploaded image if book creation failed
+                    await _cloudinaryService.DeleteImageAsync(newImage.FileImageKey);
+                    return null;
+                }
+
+                return _mapper.Map<BookDto>(returnEntity);
+            }
+            catch (Exception)
+            {
+
+                // delete image upload if anything fails
+                if (newImage != null)
+                    await _cloudinaryService.DeleteImageAsync(newImage.FileImageKey);
+
+                throw;
+            }
+
 
         }
 
         public async Task<BookDto?> EditAsync(int id, EditBookDto dto)
         {
-            Book book = _mapper.Map<Book>(dto);
-            book.BookId = id;
-            Book? updatedBook = await _bookRepository.EditBookWithCategories(book, id, dto.CategoryIds);
+            var existingBook = await _bookRepository.GetByIdAsync(id);
 
-            if (updatedBook == null)
-                return null;
+            if (existingBook == null)
+                throw ApiException.NotFound($"Book with ID {id} not found");
 
-            return _mapper.Map<BookDto>(updatedBook);
+            ImageUploadResultDto? newImage = null;
+            var oldImageKey = existingBook.CoverImageKey;
+
+            try
+            {
+                // Upload new image (if provided)
+                if (dto.CoverFile != null)
+                {
+                    newImage = await _cloudinaryService
+                        .UploadImageAsync(dto.CoverFile, "LibraryMS/books/covers");
+                }
+
+                var book = _mapper.Map<Book>(dto);
+                book.BookId = id;
+                book.CoverImageUrl = newImage?.FileImageUrl ?? existingBook.CoverImageUrl;
+                book.CoverImageKey = newImage?.FileImageKey ?? existingBook.CoverImageKey;
+
+                var updatedBook = await _bookRepository.EditBookWithCategories(book, id, dto.CategoryIds);
+
+                if (updatedBook == null)
+                    throw ApiException.BadRequest("Failed to update book");
+
+                // Delete old image AFTER DB success
+                if (newImage != null && !string.IsNullOrEmpty(oldImageKey))
+                {
+                    await _cloudinaryService.DeleteImageAsync(oldImageKey);
+                }
+
+                return _mapper.Map<BookDto>(updatedBook);
+            }
+            catch
+            {
+                // delete new upload if anything fails
+                if (newImage != null)
+                    await _cloudinaryService.DeleteImageAsync(newImage.FileImageKey);
+
+                throw;
+            }
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

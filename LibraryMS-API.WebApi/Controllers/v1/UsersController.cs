@@ -25,12 +25,11 @@ namespace LibraryMS_API.WebApi.Controllers.v1
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] string? search,
             [FromQuery] string? order,
-            [FromQuery] bool? isApproved,
             [FromQuery] int page,
             [FromQuery] int limit
             )
         {
-            var users = await _userService.GetAllWithBorrowBookAsync(search, order, isApproved, page, limit);
+            var users = await _userService.GetAllWithBorrowBookAsync(search, order, page, limit);
             return Ok(users);
         }
 
@@ -62,6 +61,22 @@ namespace LibraryMS_API.WebApi.Controllers.v1
 
             if (user == null)
                 return NotFound();
+
+            return Ok(user);
+        }
+
+        [HttpPut("{id}/profile")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> EditUser(string id, [FromForm] EditUserDto dto)
+        {
+            var user = await _userService.EditUserAsync(id, dto);
+
+            if (user == null)
+                return BadRequest("Failed to edit user.");
 
             return Ok(user);
         }

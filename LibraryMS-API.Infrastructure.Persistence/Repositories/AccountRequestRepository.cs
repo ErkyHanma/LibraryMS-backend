@@ -11,7 +11,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Repositories
     public class AccountRequestRepository : GenericRepository<AccountRequest>, IAccountRequestRepository
     {
 
-        public readonly LibraryMSContext _context;
+        public new readonly LibraryMSContext _context;
 
         public AccountRequestRepository(LibraryMSContext context) : base(context)
         {
@@ -19,7 +19,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Repositories
         }
 
 
-        public async Task<bool> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string? rejectionReason)
+        public async Task<AccountRequest?> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string? rejectionReason)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Repositories
                 }
 
                 await _context.SaveChangesAsync();
-                return true;
+                return entity;
             }
             catch (ApiException)
             {

@@ -28,7 +28,7 @@ namespace LibraryMS_API.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.Property(b => b.Summary)
                 .HasMaxLength(2000);
 
-            builder.Property(b => b.CoverUrl)
+            builder.Property(b => b.CoverImageUrl)
                 .HasMaxLength(500);
 
             builder.Property(b => b.UpdatedAt)

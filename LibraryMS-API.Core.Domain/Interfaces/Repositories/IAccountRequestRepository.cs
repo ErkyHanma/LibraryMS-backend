@@ -6,6 +6,6 @@ namespace LibraryMS_API.Core.Domain.Interfaces.Repositories
 {
     public interface IAccountRequestRepository : IGenericRepository<AccountRequest>
     {
-        Task<bool> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string? rejectionReason);
+        Task<AccountRequest?> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string? rejectionReason);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using LibraryMS_API.Core.Application.Dtos.Base;
+using LibraryMS_API.Core.Application.Dtos.Image;
 using LibraryMS_API.Core.Application.Dtos.User;
 using LibraryMS_API.Core.Application.Exceptions;
 using LibraryMS_API.Core.Application.Interfaces;
@@ -14,13 +15,16 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly IBorrowRecordRepository _borrowRecordRepository;
 
         public UserService(
             UserManager<User> userManager,
+            ICloudinaryService cloudinaryService,
             IBorrowRecordRepository borrowRecordRepository)
         {
             _userManager = userManager;
+            _cloudinaryService = cloudinaryService;
             _borrowRecordRepository = borrowRecordRepository;
         }
 
@@ -107,7 +111,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
         }
 
         // Get all users with their borrowed record count. With optional search, sorting, filtering and pagination
-        public async Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", bool? isApproved = true, int page = 1, int limit = 10)
+        public async Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -116,8 +120,8 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
             var users = _userManager.Users;
 
-            if (isApproved != null && isApproved == true)
-                users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
+            // only users who has been accepted
+            users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
 
 
             // Search users by name, lastname, email or universityId
@@ -197,6 +201,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
         {
             return await _userManager.Users.CountAsync();
         }
+
         public async Task<UserDto?> GetById(string Id)
         {
             var user = await _userManager.FindByIdAsync(Id);
@@ -353,146 +358,71 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             return result.Succeeded;
         }
 
-        //public virtual async Task<EditUserResponseDto> EditUserAsync(EditUserDto dto, string? origin, bool? isCreated = false, bool? isApi = false)
-        //{
-        //    bool isNotcreated = !isCreated ?? false;
-        //    EditUserResponseDto response = new()
-        //    {
-        //        Email = "",
-        //        Id = "",
-        //        LastName = "",
-        //        Name = "",
-        //        UserName = "",
-        //        IdentificationNumber = "",
-        //        Role = "",
-        //        HasError = false,
-        //        Errors = []
-        //    };
+        public async Task<UserDto> EditUserAsync(string id, EditUserDto dto)
+        {
 
-        //    var userWithSameUserName = await _userManager.Users.FirstOrDefaultAsync(w => w.UserName == dto.UserName && w.Id != dto.Id);
-        //    if (userWithSameUserName != null)
-        //    {
-        //        response.HasError = true;
-        //        response.Errors.Add($"this username: {dto.UserName} is already taken.");
-        //        return response;
-        //    }
+            ImageUploadResultDto? newImage = null;
+            var existingProfileImageKey = string.Empty;
 
-        //    var userWithSameEmail = await _userManager.Users.FirstOrDefaultAsync(w => w.Email == dto.Email && w.Id != dto.Id);
-        //    if (userWithSameEmail != null)
-        //    {
-        //        response.HasError = true;
-        //        response.Errors.Add($"this email: {dto.Email} is already taken.");
-        //        return response;
-        //    }
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
 
-        //    var userWithSameIdentificationNumber = await _userManager.Users
-        //        .FirstOrDefaultAsync(w => w.IdentificationNumber == dto.IdentificationNumber && w.Id != dto.Id);
+                if (user == null)
+                    throw ApiException.NotFound($"User with ID {id} not found!");
 
-        //    if (userWithSameIdentificationNumber != null)
-        //    {
-        //        response.HasError = true;
-        //        response.Errors.Add($"this identification number: {dto.IdentificationNumber} is already taken.");
-        //        return response;
-        //    }
-
-        //    var user = await _userManager.FindByIdAsync(dto.Id);
-        //    var roleList = await _userManager.GetRolesAsync(user);
-
-        //    if (user == null)
-        //    {
-        //        response.HasError = true;
-        //        response.Errors.Add($"There is no account registered with this user");
-        //        return response;
-        //    }
-
-        //    user.Name = dto.Name;
-        //    user.LastName = dto.LastName;
-        //    user.UserName = dto.UserName;
-        //    user.IdentificationNumber = dto.IdentificationNumber;
-        //    user.EmailConfirmed = user.EmailConfirmed && user.Email == dto.Email;
-        //    user.Email = dto.Email;
-
-        //    if (!string.IsNullOrWhiteSpace(dto.Password) && isNotcreated)
-        //    {
-        //        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        //        var resultChange = await _userManager.ResetPasswordAsync(user, token, dto.Password);
-
-        //        if (resultChange != null && !resultChange.Succeeded)
-        //        {
-        //            response.HasError = true;
-        //            response.Errors.AddRange(resultChange.Errors.Select(s => s.Description).ToList());
-        //            return response;
-        //        }
-        //    }
+                var roleList = await _userManager.GetRolesAsync(user);
 
 
-        //    // edit initial balance just for customer users
-        //    if (roleList.FirstOrDefault() == Roles.Customer.ToString())
-        //    {
-        //        var userMainAccount = await _savingAccountRepository.GetMainAccountByUserIdAsync(user.Id);
+                if (dto.ProfileImageFile != null)
+                {
+                    newImage = await _cloudinaryService.UploadImageAsync(dto.ProfileImageFile, "LibraryMS/Users");
+                    existingProfileImageKey = user.ProfileImageKey ?? string.Empty;
+                }
 
-        //        if (userMainAccount == null)
-        //        {
-        //            response.HasError = true;
-        //            response.Errors.Add("Either account or user don't exists. Please try again.");
-        //            return response;
-        //        }
+                user.Name = dto.Name;
+                user.LastName = dto.LastName;
+                user.ProfileImageUrl = newImage?.FileImageUrl ?? user.ProfileImageUrl;
+                user.ProfileImageKey = newImage?.FileImageKey ?? user.ProfileImageKey;
 
-        //        userMainAccount.CurrentBalance += dto.InitialBalance ?? 0;
-        //        await _savingAccountRepository.UpdateAsync(userMainAccount.SavingAccountId, userMainAccount);
-        //    }
+                var result = await _userManager.UpdateAsync(user);
 
-
-
-        //    var result = await _userManager.UpdateAsync(user);
-
-        //    if (result.Succeeded)
-        //    {
-
-        //        if (!user.EmailConfirmed && isNotcreated)
-        //        {
-        //            if (isApi != null && !isApi.Value)
-        //            {
-        //                string verificationUri = await GetVerificationEmailUri(user, origin ?? "");
-        //                await _emailService.SendAsync(new EmailRequestDto()
-        //                {
-        //                    To = dto.Email,
-        //                    HtmlBody = $"Please confirm your account visiting this URL {verificationUri}",
-        //                    Subject = "Confirm registration"
-        //                });
-        //            }
-        //            else
-        //            {
-        //                string? verificationToken = await GetVerificationEmailToken(user);
-        //                await _emailService.SendAsync(new EmailRequestDto()
-        //                {
-        //                    To = dto.Email,
-        //                    HtmlBody = $"Please confirm your account use this token {verificationToken}",
-        //                    Subject = "Confirm registration"
-        //                });
-        //            }
-        //        }
+                // Rollback: Delete the newly uploaded image if user update fails
+                if (!result.Succeeded && newImage != null)
+                    await _cloudinaryService.DeleteImageAsync(newImage.FileImageKey);
 
 
+                // If new image is uploaded delete old image from cloudinary
+                if (!string.IsNullOrEmpty(existingProfileImageKey) && newImage != null)
+                {
+                    await _cloudinaryService.DeleteImageAsync(existingProfileImageKey);
+                }
 
+                return new UserDto()
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    LastName = user.LastName,
+                    Email = user.Email ?? "",
+                    ProfileImageUrl = user.ProfileImageUrl ?? "",
+                    UniversityId = user.UniversityId,
+                    Status = user.Status,
+                    CreatedAt = user.CreatedAt,
+                    JoinedAt = user.JoinedAt,
+                    UpdatedAt = user.UpdatedAt,
+                    Role = Enum.Parse<Roles>(roleList.FirstOrDefault() ?? Roles.User.ToString()),
+                };
 
-        //        response.Id = user.Id;
-        //        response.Email = user.Email ?? "";
-        //        response.UserName = user.UserName ?? "";
-        //        response.Name = user.Name;
-        //        response.LastName = user.LastName;
-        //        response.IsActive = user.EmailConfirmed;
-        //        response.Role = roleList.FirstOrDefault() ?? "";
+            }
+            catch (Exception)
+            {
+                if (newImage != null)
+                    // Rollback: Delete the newly uploaded image if user update fails
+                    await _cloudinaryService.DeleteImageAsync(newImage.FileImageKey);
 
-        //        return response;
-        //    }
-        //    else
-        //    {
-        //        response.HasError = true;
-        //        response.Errors.AddRange(result.Errors.Select(s => s.Description).ToList());
-        //        return response;
-        //    }
-        //}
+                throw;
+            }
+        }
 
         public async Task DeleteAsync(string id)
         {

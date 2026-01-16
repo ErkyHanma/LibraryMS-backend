@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using LibraryMS_API.Core.Application.Dtos.AccountRequest;
 using LibraryMS_API.Core.Application.Dtos.Base;
+using LibraryMS_API.Core.Application.Dtos.Email;
 using LibraryMS_API.Core.Application.Dtos.User;
+using LibraryMS_API.Core.Application.Exceptions;
 using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Domain.Common.Enum;
 using LibraryMS_API.Core.Domain.Entities;
@@ -14,13 +16,15 @@ namespace LibraryMS_API.Core.Application.Services
     {
         private readonly IAccountRequestRepository _accountRequestRepository;
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
 
 
-        public AccountRequestService(IAccountRequestRepository accountRequestRepository, IUserService userService, IMapper mapper)
+        public AccountRequestService(IAccountRequestRepository accountRequestRepository, IUserService userService, IEmailService emailService, IMapper mapper)
         {
             _accountRequestRepository = accountRequestRepository;
             _userService = userService;
+            _emailService = emailService;
             _mapper = mapper;
         }
 
@@ -122,7 +126,54 @@ namespace LibraryMS_API.Core.Application.Services
 
         public async Task<bool> ChangeRequestStatusAsync(int accountRequestId, AccountRequestStatus status, string? rejectionReason)
         {
-            return await _accountRequestRepository.ChangeStatus(accountRequestId, status, rejectionReason);
+            // Validate if account request exists
+            var accountRequest = await _accountRequestRepository.GetByIdAsync(accountRequestId);
+            if (accountRequest == null)
+                throw ApiException.NotFound($"Account request with ID {accountRequestId} not found.");
+
+            // Validate if the user who made the request exists
+            var user = await _userService.GetById(accountRequest.UserId);
+            if (user == null)
+                throw ApiException.NotFound($"User associated with this request not found.");
+
+            var updatedRequest = await _accountRequestRepository.ChangeStatus(accountRequestId, status, rejectionReason);
+            if (updatedRequest == null)
+                return false;
+
+            // If request is approved, update user status
+            if (status == AccountRequestStatus.Approved)
+                await _userService.ChangeStatus(updatedRequest.UserId, UserStatus.Approved);
+
+            // Send confirmation email
+            var subject = status == AccountRequestStatus.Approved ? "Account Approved" : "Account Rejected";
+            var body = status == AccountRequestStatus.Approved ?
+                $@"
+                    <h1>LibraryMS</h1>
+                    <h2>Congratulations, {user.Name}!</h2>
+                    <p>Your account has been approved by the administrator.</p>
+                    <p>You can now log in to the LibraryMS using your registered email.</p>
+                    <p><strong>University ID:</strong> {user.UniversityId}</p>
+                    <p>We look forward to serving you in your academic journey!</p>
+                "
+                :
+                $@"
+                <h1>LibraryMS</h1>
+                    <h2>Account Request Rejected, {user.Name}</h2>
+                    <p>We regret to inform you that your account request has been rejected by the administrator.</p>
+                    <p><strong>Reason for Rejection:</strong> {rejectionReason}</p>
+                    <p>You can send another request within 15 days</p>
+                    <p>If you have any questions or believe this is a mistake, please contact the library administration for further assistance.</p>  
+                ";
+
+
+            await _emailService.SendAsync(new EmailRequestDto
+            {
+                To = user.Email,
+                Subject = subject,
+                HtmlBody = body
+            });
+
+            return true;
         }
     }
 }
