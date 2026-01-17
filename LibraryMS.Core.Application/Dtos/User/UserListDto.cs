@@ -1,0 +1,20 @@
+﻿using LibraryMS.Core.Domain.Common.Enum;
+
+namespace LibraryMS.Core.Application.Dtos.User
+{
+    public class UserListDto
+    {
+        public required string Id { get; set; }
+        public required string Name { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public UserStatus Status { get; set; }
+        public required string UniversityId { get; set; }
+        public required string ProfileImageUrl { get; set; }
+        public required Roles Role { get; set; }
+        public int BorrowedBooksCount { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? JoinedAt { get; set; }
+    }
+}
