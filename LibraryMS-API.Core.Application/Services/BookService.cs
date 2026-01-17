@@ -13,12 +13,14 @@ namespace LibraryMS_API.Core.Application.Services
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
+        private readonly IValidationService _validationService;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
 
-        public BookService(IBookRepository bookRepository, IMapper mapper, ICloudinaryService cloudinaryService)
+        public BookService(IBookRepository bookRepository, IValidationService validationService, IMapper mapper, ICloudinaryService cloudinaryService)
         {
             _bookRepository = bookRepository;
+            _validationService = validationService;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
         }
@@ -123,6 +125,9 @@ namespace LibraryMS_API.Core.Application.Services
 
             try
             {
+
+                await _validationService.ValidateAsync(dto);
+
                 newImage = await _cloudinaryService.UploadImageAsync(dto.CoverFile, "LibraryMS/books/covers");
 
                 if (newImage == null)
@@ -168,6 +173,9 @@ namespace LibraryMS_API.Core.Application.Services
 
             try
             {
+                // Validate DTO
+                await _validationService.ValidateAsync(dto);
+
                 // Upload new image (if provided)
                 if (dto.CoverFile != null)
                 {
@@ -202,7 +210,6 @@ namespace LibraryMS_API.Core.Application.Services
                 throw;
             }
         }
-
 
         public async Task<bool> DeleteAsync(int id)
         {

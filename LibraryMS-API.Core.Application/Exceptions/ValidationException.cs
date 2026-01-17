@@ -1,4 +1,6 @@
-﻿namespace LibraryMS_API.Core.Application.Exceptions
+﻿using FluentValidation.Results;
+
+namespace LibraryMS_API.Core.Application.Exceptions
 {
     public class ValidationException : Exception
     {
@@ -9,13 +11,13 @@
             Errors = [];
         }
 
-        //public ValidationException(IEnumerable<ValidationFailure> failures) : this()
-        //{
-        //    foreach (var failure in failures)
-        //    {
-        //        Errors.Add(failure.ErrorMessage);
-        //    }
-        //}
+        public ValidationException(IEnumerable<ValidationFailure> failures) : this()
+        {
+            foreach (var failure in failures)
+            {
+                Errors.Add(failure.ErrorMessage);
+            }
+        }
 
     }
 }

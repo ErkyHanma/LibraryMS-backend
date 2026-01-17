@@ -1,4 +1,5 @@
-﻿using LibraryMS_API.Core.Application.Interfaces;
+﻿using FluentValidation;
+using LibraryMS_API.Core.Application.Interfaces;
 using LibraryMS_API.Core.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace LibraryMS_API.Core.Application.IOC
 
             #region Configurations
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             #endregion
 
             #region Services
@@ -20,6 +22,7 @@ namespace LibraryMS_API.Core.Application.IOC
             services.AddScoped<IBorrowRecordService, BorrowRecordService>();
             services.AddScoped<IAccountRequestService, AccountRequestService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IValidationService, ValidationService>();
             #endregion
         }
     }

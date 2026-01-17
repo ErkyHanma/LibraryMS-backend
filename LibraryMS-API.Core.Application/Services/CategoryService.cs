@@ -9,11 +9,13 @@ namespace LibraryMS_API.Core.Application.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IValidationService _validationService;
         private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository, IValidationService validationService, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _validationService = validationService;
             _mapper = mapper;
         }
 
@@ -40,6 +42,9 @@ namespace LibraryMS_API.Core.Application.Services
 
         public async Task<CategoryDto?> AddAsync(AddCategoryDto dto)
         {
+
+            await _validationService.ValidateAsync(dto);
+
             Category entity = _mapper.Map<Category>(dto);
             Category? returnEntity = await _categoryRepository.AddAsync(entity);
 

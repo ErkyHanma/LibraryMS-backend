@@ -44,6 +44,11 @@ namespace LibraryMS_API.WebApi.Handlers
                     exceptionTitle = "Bad Request";
                     httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     break;
+                case ValidationException:
+                    exceptionTitle = "Bad Request";
+                    details = ((ValidationException)exception).Errors.Aggregate((a, b) => a + ", " + b);
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    break;
                 default:
                     httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     details = "Please try again later or contact support if the problem persists";

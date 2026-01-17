@@ -4,8 +4,25 @@ using LibraryMS_API.Infrastructure.Persistence.IOC;
 using LibraryMS_API.Infrastructure.Shared.IOC;
 using LibraryMS_API.WebApi.Extensions;
 using LibraryMS_API.WebApi.Handlers;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddControllers(opt =>
+{
+    opt.Filters.Add(new ProducesAttribute("application/json"));
+}).ConfigureApiBehaviorOptions(opt =>
+{
+    opt.SuppressInferBindingSourcesForParameters = true;
+    opt.SuppressMapClientErrors = true;
+}).AddJsonOptions(opt =>
+{
+    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+
 
 // Add services to the container.
 builder.Services.AddPersistenceLayerIOC(builder.Configuration);

@@ -14,15 +14,18 @@ namespace LibraryMS_API.Core.Application.Services
     {
         private readonly IBorrowRecordRepository _borrowRecordRepository;
         private readonly IUserService _userService;
+        private readonly IValidationService _validationService;
         private readonly IMapper _mapper;
 
         public BorrowRecordService(
             IBorrowRecordRepository borrowRecordRepository,
             IUserService userService,
+            IValidationService validationService,
             IMapper mapper)
         {
             _borrowRecordRepository = borrowRecordRepository;
             _userService = userService;
+            _validationService = validationService;
             _mapper = mapper;
         }
 
@@ -231,6 +234,10 @@ namespace LibraryMS_API.Core.Application.Services
 
         public async Task<BorrowRecordDto?> AddBorrowRecordAsync(AddBorrowRecordDto dto)
         {
+
+            // Validate DTO
+            await _validationService.ValidateAsync(dto);
+
             var MAX_USER_BORROW_LIMIT = 5;
 
             // check if user exists

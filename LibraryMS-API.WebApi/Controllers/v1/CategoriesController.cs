@@ -58,9 +58,7 @@ namespace LibraryMS_API.WebApi.Controllers.v1
             var addedCategory = await _categoryService.AddAsync(dto);
 
             if (addedCategory == null)
-            {
                 return BadRequest("Failed to add category.");
-            }
 
             return StatusCode(StatusCodes.Status201Created, addedCategory);
 

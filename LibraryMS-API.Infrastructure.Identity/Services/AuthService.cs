@@ -26,6 +26,7 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
         private readonly JwtSettings _jwtSettings;
+        private readonly IValidationService _validationService;
         private readonly IAccountRequestRepository _accountRequestRepository;
 
 
@@ -34,12 +35,14 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
             SignInManager<User> signInManager,
             IOptions<JwtSettings> jwtSettings,
             IAccountRequestRepository accountRequestRepository,
+            IValidationService validationService,
             IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtSettings = jwtSettings.Value;
             _emailService = emailService;
+            _validationService = validationService;
             _accountRequestRepository = accountRequestRepository;
         }
 
@@ -47,6 +50,9 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
         public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
         {
+
+            // Validate input
+            await _validationService.ValidateAsync(loginDto);
 
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
@@ -99,6 +105,9 @@ namespace LibraryMS_API.Infrastructure.Identity.Services
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpDto dto)
         {
+            // Validate input
+            await _validationService.ValidateAsync(dto);
+
             // Validate email availability
             var existingUserByEmail = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUserByEmail != null)
