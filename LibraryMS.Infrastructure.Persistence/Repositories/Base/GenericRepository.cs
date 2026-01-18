@@ -106,6 +106,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories.Base
                 throw new Exception($"Error retrieving entity {typeof(TEntity).Name} with Id {id} and includes.", ex);
             }
         }
+
         public virtual async Task<TEntity?> AddAsync(TEntity entity)
         {
             if (entity == null)

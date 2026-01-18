@@ -40,13 +40,10 @@ namespace LibraryMS.Infrastructure.Persistence.IOC
 
 
             #region Repositories
-            //services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IBookRepository, BookRepository>();
             services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
             services.AddScoped<IAccountRequestRepository, AccountRequestRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IBookCategoryRepository, BookCategoryRepository>();
-
             #endregion
 
 

@@ -10,7 +10,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
     public class BorrowRecordRepository : GenericRepository<BorrowRecord>, IBorrowRecordRepository
     {
 
-        private readonly LibraryMSContext _context;
+        private new readonly LibraryMSContext _context;
         public BorrowRecordRepository(LibraryMSContext context) : base(context)
         {
             _context = context;

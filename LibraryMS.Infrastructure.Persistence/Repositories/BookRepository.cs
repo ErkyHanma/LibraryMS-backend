@@ -38,6 +38,10 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
                         .FirstOrDefaultAsync(b => b.BookId == entity.BookId);
 
             }
+            catch (ArgumentNullException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 throw new Exception($"Error adding book.", ex);
