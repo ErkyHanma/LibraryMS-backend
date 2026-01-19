@@ -24,7 +24,6 @@ namespace LibraryMS.Core.Application.Services
         {
             var totalBorrowedRecordQuery = _borrowRecordRepository.GetAllQuery().Where(br => br.ReturnDate == null);
 
-
             var totalBooks = await _bookRepository.GetAllQuery().CountAsync();
             var TotalBorrowedRecords = await totalBorrowedRecordQuery.CountAsync();
             var TotalOverdueBooks = await totalBorrowedRecordQuery.Where(br => br.DueDate < DateTime.UtcNow).CountAsync();
