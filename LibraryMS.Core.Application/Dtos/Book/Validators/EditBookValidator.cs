@@ -36,6 +36,7 @@ public class EditBookValidator : AbstractValidator<EditBookDto>
             .GreaterThan(0);
 
         RuleFor(x => x.PublishDate)
+             .NotNull()
             .LessThanOrEqualTo(DateTime.UtcNow)
             .WithMessage("Publish date cannot be in the future.");
 
@@ -64,6 +65,7 @@ public class EditBookValidator : AbstractValidator<EditBookDto>
         var allowedTypes = new[]
         {
             "image/jpeg",
+            "image/jpg",
             "image/png",
             "image/webp"
         };

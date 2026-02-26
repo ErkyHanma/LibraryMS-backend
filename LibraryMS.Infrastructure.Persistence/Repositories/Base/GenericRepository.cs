@@ -149,6 +149,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories.Base
                 if (entry != null)
                 {
                     _context.Entry(entry).CurrentValues.SetValues(entity);
+                    _context.Entry(entry).Property("CreatedAt").IsModified = false;
                     await _context.SaveChangesAsync();
                     return entry;
                 }
@@ -161,7 +162,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories.Base
             }
         }
 
-        public virtual async Task DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(int id)
         {
             try
             {
@@ -171,7 +172,10 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories.Base
                 {
                     _context.Set<TEntity>().Remove(entry);
                     await _context.SaveChangesAsync();
+                    return true;
                 }
+
+                return false;
             }
             catch (Exception ex)
             {

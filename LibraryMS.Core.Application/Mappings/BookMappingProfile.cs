@@ -20,6 +20,8 @@ namespace LibraryMS.Core.Application.Mappings
             CreateMap<Book, AddBookDto>()
                 .ForMember(dest => dest.CoverFile, opt => opt.Ignore())
                 .ReverseMap()
+                .ForMember(dest => dest.PublishDate,
+                            opt => opt.MapFrom(src => DateTime.SpecifyKind(src.PublishDate, DateTimeKind.Utc)))
                 .ForMember(dest => dest.BookId, opt => opt.Ignore())
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore())
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore())
@@ -29,6 +31,8 @@ namespace LibraryMS.Core.Application.Mappings
             CreateMap<Book, EditBookDto>()
                 .ForMember(dest => dest.CoverFile, opt => opt.Ignore())
                 .ReverseMap()
+                .ForMember(dest => dest.PublishDate,
+                            opt => opt.MapFrom(src => DateTime.SpecifyKind(src.PublishDate, DateTimeKind.Utc)))
                 .ForMember(dest => dest.BookId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore())

@@ -11,6 +11,6 @@
         Task<TEntity?> AddAsync(TEntity entity);
         Task<List<TEntity>?> AddRangeAsync(List<TEntity> entities);
         Task<TEntity?> EditAsync(int id, TEntity entity);
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
     }
 }

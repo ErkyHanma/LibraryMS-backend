@@ -27,7 +27,7 @@ namespace LibraryMS.Core.Application.Services
 
         // Get all books with optional search, sorting, filtering and pagination
         public async Task<PaginatedResult<BookDto>> GetAllAsync(
-            string? search, string? category,
+            string? search, List<string>? categories,
             string? order = "desc", bool? isAvailable = false,
             int page = 1, int limit = 10)
         {
@@ -39,11 +39,23 @@ namespace LibraryMS.Core.Application.Services
             var query = _bookRepository.GetAllQueryWithInclude(["BookCategories.Category"]);
 
             // Filter by category name
-            if (!string.IsNullOrEmpty(category))
+            if (categories?.Count > 0)
             {
-                query = query.Where(b => b.BookCategories != null &&
-                        b.BookCategories.Any(bc => bc.Category != null &&
-                            bc.Category.Name.ToLower().Contains(category.ToLower())));
+                var lowerCategories = categories
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .Select(c => c.ToLower())
+                    .ToList();
+
+                if (lowerCategories.Any())
+                {
+                    query = query.Where(b =>
+                        b.BookCategories != null &&
+                        b.BookCategories.Any(bc =>
+                            bc.Category != null &&
+                            lowerCategories.Contains(bc.Category.Name.ToLower())
+                        )
+                    );
+                }
             }
 
             // Filter by availability
@@ -105,16 +117,34 @@ namespace LibraryMS.Core.Application.Services
 
         }
 
-        public async Task<List<BookDto>> GetAllByCategoryIdAsync(int id)
+        public async Task<PaginatedResult<BookDto>> GetAllByCategoryIdAsync(int id, int page = 1, int limit = 10)
         {
-            var listEntities = await _bookRepository
+            var query = _bookRepository
                 .GetAllQueryWithInclude(["BookCategories.Category"])
-                .Where(b => b.BookCategories != null && b.BookCategories.Any(bc => bc.CategoryId == id))
+                .Where(b => b.BookCategories != null && b.BookCategories.Any(bc => bc.CategoryId == id));
+
+            // Get total count for pagination
+            var total = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)limit);
+
+            var items = await query
+                .Skip((page - 1) * limit)
+                .Take(limit)
                 .ToListAsync();
 
-            var listEntityDtos = _mapper.Map<List<BookDto>>(listEntities);
+            var listDtos = _mapper.Map<List<BookDto>>(items);
 
-            return listEntityDtos;
+            return new PaginatedResult<BookDto>
+            {
+                Data = listDtos,
+                Meta = new PageMetadata
+                {
+                    Page = page,
+                    Limit = limit,
+                    Total = total,
+                    TotalPage = totalPages
+                }
+            };
 
         }
 
@@ -213,7 +243,18 @@ namespace LibraryMS.Core.Application.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            await _bookRepository.DeleteAsync(id);
+            var existingBook = await _bookRepository.GetByIdAsync(id);
+
+            if (existingBook == null)
+                throw ApiException.NotFound($"Book with ID {id} not found");
+
+
+            var result = await _bookRepository.DeleteAsync(id);
+
+            if (result) // If delete success delete image from cloudinary
+                await _cloudinaryService.DeleteImageAsync(existingBook.CoverImageKey);
+
+
             return true;
         }
     }

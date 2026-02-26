@@ -23,14 +23,17 @@ namespace LibraryMS.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBooks(
             [FromQuery] string? search,
-            [FromQuery] string? category,
+            [FromQuery] List<string>? category,
             [FromQuery] string? order,
             [FromQuery] bool? isAvailable,
             [FromQuery] int page,
             [FromQuery] int limit
             )
         {
-            var books = await _bookService.GetAllAsync(search, category, order, isAvailable, page, limit);
+
+            var categories = category ?? [];
+
+            var books = await _bookService.GetAllAsync(search, categories, order, isAvailable, page, limit);
             return Ok(books);
         }
 
@@ -45,9 +48,12 @@ namespace LibraryMS.WebApi.Controllers.v1
             var book = await _bookService.GetByIdAsync(id);
 
             if (book == null)
-            {
-                return NotFound($"Book with ID {id} not found");
-            }
+                return Problem(
+                    title: "Book not found",
+                    detail: $"Book with ID {id} not found",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+
 
             return Ok(book);
 
@@ -60,15 +66,12 @@ namespace LibraryMS.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAllBookByCategoryId(int id)
+        public async Task<IActionResult> GetAllBookByCategoryId(
+            int id,
+            [FromQuery] int page,
+            [FromQuery] int limit)
         {
-            var books = await _bookService.GetAllByCategoryIdAsync(id);
-
-            if (books.Count <= 0)
-            {
-                return NoContent();
-            }
-
+            var books = await _bookService.GetAllByCategoryIdAsync(id, page, limit);
             return Ok(books);
 
         }
@@ -93,7 +96,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
 
-        [HttpPost("{id}")]
+        [HttpPut("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]

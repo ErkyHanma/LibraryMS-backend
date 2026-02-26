@@ -38,6 +38,7 @@ namespace LibraryMS.Core.Application.Dtos.Book.Validators
                 .WithMessage("Pages must be greater than zero.");
 
             RuleFor(x => x.PublishDate)
+                 .NotNull()
                 .LessThanOrEqualTo(DateTime.UtcNow)
                 .WithMessage("Publish date cannot be in the future.");
 

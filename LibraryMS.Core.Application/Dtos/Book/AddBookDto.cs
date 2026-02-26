@@ -14,5 +14,7 @@ namespace LibraryMS.Core.Application.Dtos.Book
         public required IFormFile CoverFile { get; set; }
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }

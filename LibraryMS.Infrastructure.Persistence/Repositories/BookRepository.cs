@@ -61,7 +61,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
                     return null;
 
                 _context.Entry(currentEntity).CurrentValues.SetValues(newEntity);
-
+                _context.Entry(currentEntity).Property("CreatedAt").IsModified = false; // Avoid updating createdAt
                 currentEntity.BookCategories?.Clear();
                 currentEntity.BookCategories = categoryIds
                     .Select(cId => new BookCategory { BookId = id, CategoryId = cId })
