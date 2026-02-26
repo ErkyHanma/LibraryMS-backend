@@ -21,6 +21,10 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.Property(ar => ar.RejectionReason)
                 .HasMaxLength(500)
                 .IsRequired(false);
+
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
             #endregion
 
             #region Relationships

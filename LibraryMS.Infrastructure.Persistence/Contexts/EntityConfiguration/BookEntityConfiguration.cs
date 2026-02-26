@@ -31,6 +31,10 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.Property(b => b.CoverImageUrl)
                 .HasMaxLength(500);
 
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
             builder.Property(b => b.UpdatedAt)
                 .IsRequired(false);
 

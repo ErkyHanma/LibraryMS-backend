@@ -19,6 +19,7 @@ namespace LibraryMS.Infrastructure.Identity.Seeds
                 JoinedAt = DateTime.UtcNow,
                 Status = UserStatus.Approved,
                 UniversityId = "2026-0001",
+                CreatedAt = DateTime.UtcNow
 
             };
 

@@ -14,7 +14,9 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             #endregion
 
             #region Property configurations
-
+            builder.Property(e => e.CreatedAt)
+             .HasDefaultValueSql("CURRENT_TIMESTAMP")
+             .ValueGeneratedOnAdd();
             #endregion
 
             #region Relationshipsz
