@@ -3,5 +3,6 @@
     public class AddCategoryDto
     {
         public required string Name { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

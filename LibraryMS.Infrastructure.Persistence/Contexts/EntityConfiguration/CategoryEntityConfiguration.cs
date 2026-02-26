@@ -19,6 +19,10 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
                 .IsRequired()
                 .HasMaxLength(255);
 
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
             builder.HasIndex(c => c.Name)
                 .IsUnique();
             #endregion

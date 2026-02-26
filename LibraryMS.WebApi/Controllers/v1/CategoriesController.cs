@@ -30,6 +30,34 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
         // GET
+        [HttpGet("pagination")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllCategoriesWithPagination(
+            [FromQuery] string? search,
+            [FromQuery] string? order,
+            [FromQuery] int page,
+            [FromQuery] int limit
+            )
+        {
+            var categories = await _categoryService.GetAllWithPaginationAsync(search, order, page, limit);
+            return Ok(categories);
+        }
+
+
+        // GET
+        [HttpGet("popular")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetPopularCategories([FromQuery] int limit = 10)
+        {
+            var categories = await _categoryService.GetPopularCategoriesAsync(limit);
+            return Ok(categories);
+        }
+
+        // GET
         [HttpGet("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDto))]
@@ -56,6 +84,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         public async Task<IActionResult> AddCategory([FromBody] AddCategoryDto dto)
         {
             var addedCategory = await _categoryService.AddAsync(dto);
+
 
             if (addedCategory == null)
                 return BadRequest("Failed to add category.");

@@ -9,6 +9,7 @@
         public CategoryMappingProfile()
         {
             CreateMap<Category, CategoryDto>()
+                .ForMember(dest => dest.BooksCount, opt => opt.MapFrom(src => src.BookCategories != null ? src.BookCategories.Count : 0))
                 .ReverseMap()
                 .ForMember(dest => dest.BookCategories, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
