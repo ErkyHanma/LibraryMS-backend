@@ -9,5 +9,6 @@ namespace LibraryMS.Core.Application.Interfaces
         Task<LoginResponseDto> LoginAsync(LoginDto loginDto);
         Task<ForgotPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
         Task<SignUpResponseDto> SignUpAsync(SignUpDto dto);
+
     }
 }

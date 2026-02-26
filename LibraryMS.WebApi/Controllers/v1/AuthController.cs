@@ -1,6 +1,9 @@
 ﻿using Asp.Versioning;
 using LibraryMS.Core.Application.Dtos.Auth;
+using LibraryMS.Core.Application.Dtos.User;
 using LibraryMS.Core.Application.Interfaces;
+using LibraryMS.Core.Domain.Common.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryMS.WebApi.Controllers.v1
@@ -9,10 +12,12 @@ namespace LibraryMS.WebApi.Controllers.v1
     public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IUserService userService)
         {
             _authService = authService;
+            _userService = userService;
         }
 
         [HttpPost("login")]
@@ -39,6 +44,25 @@ namespace LibraryMS.WebApi.Controllers.v1
             }
 
             return Ok(await _authService.SignUpAsync(dto));
+        }
+
+        [HttpGet("me")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetUser()
+        {
+            var currentUserId = User.FindFirst("uid")?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
+
+            var user = await _userService.GetById(currentUserId);
+
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(user);
         }
 
     }

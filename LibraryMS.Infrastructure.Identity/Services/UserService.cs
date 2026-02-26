@@ -29,7 +29,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
         }
 
         // Get all users with optional search, sorting, filtering and pagination
-        public async Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? order = "asc", bool? isApproved = true, int page = 1, int limit = 10)
+        public async Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? status, string? order = "asc", bool? isApproved = true, int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -111,7 +111,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
         }
 
         // Get all users with their borrowed record count. With optional search, sorting, filtering and pagination
-        public async Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", int page = 1, int limit = 10)
+        public async Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? status, string? order = "asc", int page = 1, int limit = 10)
         {
             // Validate parameters
             if (page < 1) page = 1;
@@ -122,6 +122,13 @@ namespace LibraryMS.Infrastructure.Identity.Services
 
             // only users who has been accepted
             users = users.Where(u => u.EmailConfirmed && u.Status != UserStatus.Pending);
+
+            // Search users status
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                Enum.TryParse<UserStatus>(status, true, out var result);
+                users = users.Where(u => u.Status == result);
+            }
 
 
             // Search users by name, lastname, email or universityId
@@ -197,9 +204,25 @@ namespace LibraryMS.Infrastructure.Identity.Services
             };
         }
 
+        public async Task<List<string>> GetUserIds(string? search)
+        {
+            var users = _userManager.Users;
+
+            // Search users by name, lastname, email or universityId
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users.Where(u =>
+                    u.Name.ToLower().Contains(search.ToLower()) ||
+                    u.LastName.ToLower().Contains(search.ToLower())
+                );
+            }
+
+            return await users.Select(u => u.Id).ToListAsync();
+        }
+
         public async Task<int> GetTotalUserCountAsync()
         {
-            return await _userManager.Users.CountAsync();
+            return await _userManager.Users.Where(u => u.Status != UserStatus.Pending).CountAsync();
         }
 
         public async Task<UserDto?> GetById(string Id)

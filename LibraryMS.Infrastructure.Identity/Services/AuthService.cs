@@ -60,14 +60,9 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 throw ApiException.Conflict($"User with email {loginDto.Email} is not registered.");
             }
 
-            if (user.Status == UserStatus.Pending)
-            {
-                throw ApiException.Forbidden($"Account status is {user.Status}. Please contact support."); ;
-            }
-
             if (user.Status == UserStatus.Blocked)
             {
-                throw ApiException.Forbidden($"Account for user {user.Name + " " + user.LastName} is blocked. Please try again later.");
+                throw ApiException.Forbidden($"Account for user {user.Name + " " + user.LastName} is blocked.");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName ?? "", loginDto.Password, false, true);
@@ -173,6 +168,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 HtmlBody = $@"
                     <h2>Welcome to the LibraryMS, {newUser.Name}!</h2>
                     <p>Your account has been created successfully and is pending administrator approval.</p>
+                    <p>You now can access to the system and explere our book catalog.</p>
                     <p>You will receive another email once your account has been approved.</p>
                     <p><strong>University ID:</strong> {newUser.UniversityId}</p>
                     <p>If you have any questions, please contact the library administration.</p>
@@ -273,6 +269,12 @@ namespace LibraryMS.Infrastructure.Identity.Services
 
         }
 
+        public async Task ReturnUser(string token)
+        {
+            var newToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+
+        }
 
 
         #region "Private methods"

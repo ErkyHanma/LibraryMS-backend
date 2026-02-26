@@ -24,12 +24,13 @@ namespace LibraryMS.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] string? search,
+            [FromQuery] string? status,
             [FromQuery] string? order,
             [FromQuery] int page,
             [FromQuery] int limit
             )
         {
-            var users = await _userService.GetAllWithBorrowBookAsync(search, order, page, limit);
+            var users = await _userService.GetAllWithBorrowBookAsync(search, status, order, page, limit);
             return Ok(users);
         }
 
@@ -95,6 +96,8 @@ namespace LibraryMS.WebApi.Controllers.v1
                 return BadRequest(new { message = $"Invalid role '{dto.Role}'" });
             }
 
+            Console.WriteLine(roleEnum);
+
             var success = await _userService.ChangeRole(id, roleEnum);
             if (!success)
                 return NotFound($"User with ID {id} not found");
@@ -109,7 +112,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ChangeStatus(string id, ChangeStatusDto dto)
+        public async Task<IActionResult> ChangeStatus(string id, [FromBody] ChangeStatusDto dto)
         {
 
             if (!Enum.TryParse<UserStatus>(dto.Status, ignoreCase: true, out var statusEnum))
@@ -123,6 +126,8 @@ namespace LibraryMS.WebApi.Controllers.v1
 
             return Ok("User status change successfully");
         }
+
+
 
     }
 }

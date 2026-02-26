@@ -6,8 +6,9 @@ namespace LibraryMS.Core.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
-        Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? order = "asc", int page = 1, int limit = 10);
+        Task<PaginatedResult<UserDto>> GetAllAsync(string? search, string? status, string? order = "asc", bool? IsApproved = true, int page = 1, int limit = 10);
+        Task<List<string>> GetUserIds(string? search);
+        Task<PaginatedResult<UserListDto>> GetAllWithBorrowBookAsync(string? search, string? status, string? order = "asc", int page = 1, int limit = 10);
         Task<int> GetTotalUserCountAsync();
         Task<UserDto?> GetByEmail(string email);
         Task<UserDto?> GetById(string Id);
