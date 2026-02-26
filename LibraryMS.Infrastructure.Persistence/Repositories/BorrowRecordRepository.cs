@@ -31,7 +31,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
 
                 if (book.AvailableCopies <= 0)
                     throw ApiException.BadRequest(
-                        $"Cannot borrow book '{book.Title}' (ID: {entity.BookId}): No copies available");
+                        $"Cannot borrow book '{book.Title}'. No copies available");
 
                 await _context.Set<BorrowRecord>().AddAsync(entity);
                 book.AvailableCopies -= 1;

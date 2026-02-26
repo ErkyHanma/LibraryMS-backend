@@ -4,6 +4,7 @@
     {
         public required string UserId { get; set; }
         public int BookId { get; set; }
-        public DateTime BorrowDate { get; set; }
+        public DateTime BorrowDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

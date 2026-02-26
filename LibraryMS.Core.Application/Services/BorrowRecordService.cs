@@ -4,6 +4,7 @@ using LibraryMS.Core.Application.Dtos.Book;
 using LibraryMS.Core.Application.Dtos.BorrowRecord;
 using LibraryMS.Core.Application.Exceptions;
 using LibraryMS.Core.Application.Interfaces;
+using LibraryMS.Core.Domain.Common.Enum;
 using LibraryMS.Core.Domain.Entities;
 using LibraryMS.Core.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,9 @@ namespace LibraryMS.Core.Application.Services
                     case "overdue":
                         query = query.Where(br => br.ReturnDate == null && br.DueDate < DateTime.UtcNow);
                         break;
+                    case "late return":
+                        query = query.Where(br => br.ReturnDate != null && br.ReturnDate > br.DueDate);
+                        break;
                     case "borrowed":
                         query = query.Where(br => br.ReturnDate == null && br.DueDate >= DateTime.UtcNow);
                         break;
@@ -56,10 +60,16 @@ namespace LibraryMS.Core.Application.Services
                         break;
                 }
 
-            // search by book title or author
+
+
+            // search by book title, author or by users name or last name
             if (!string.IsNullOrEmpty(search))
             {
+                // get IDs of users matching the search term (by name or last name)
+                var users = await _userService.GetUserIds(search);
+
                 query = query.Where(br =>
+                 users.Contains(br.UserId) ||
                     br.Book != null && (br.Book.Title.ToLower().Contains(search.ToLower()) ||
                      br.Book.Author.ToLower().Contains(search.ToLower())));
             }
@@ -85,6 +95,9 @@ namespace LibraryMS.Core.Application.Services
             {
                 // get for each borrow record the user information
                 var userDto = await _userService.GetById(borrowRecord.UserId);
+
+                if (userDto == null)
+                    continue;
 
                 var dto = new BorrowRecordDto
                 {
@@ -244,6 +257,9 @@ namespace LibraryMS.Core.Application.Services
             var userDto = await _userService.GetById(dto.UserId);
             if (userDto == null)
                 throw ApiException.NotFound("User not found");
+
+            if (userDto.Status == UserStatus.Pending)
+                throw ApiException.Forbidden("Your account hasn't been aproved yet. You cannot perform this action");
 
             // check if the user can borrow another book
             var userBorrowedRecordCount = await _borrowRecordRepository
