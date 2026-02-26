@@ -25,13 +25,14 @@ namespace LibraryMS.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountRequestDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllAccountRequest(
+            [FromQuery] string? search,
             [FromQuery] string? status,
             [FromQuery] string? order,
             [FromQuery] int page,
             [FromQuery] int limit
             )
         {
-            var accountRequest = await _accountRequestService.GetAllAsync(status, order, page, limit);
+            var accountRequest = await _accountRequestService.GetAllAsync(search, status, order, page, limit);
             return Ok(accountRequest);
         }
 
@@ -65,7 +66,7 @@ namespace LibraryMS.WebApi.Controllers.v1
                 return BadRequest(new { message = $"Invalid request status '{dto.Status}'" });
             }
 
-            var accountRequest = await _accountRequestService.ChangeRequestStatusAsync(id, statusEnum, dto.RejectionReason);
+            var accountRequest = await _accountRequestService.ChangeRequestStatusAsync(id, statusEnum, dto.UserId, dto.RejectionReason);
 
             if (!accountRequest)
                 return BadRequest($"Error changing account request status");

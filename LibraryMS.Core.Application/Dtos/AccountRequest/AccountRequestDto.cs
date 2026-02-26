@@ -9,7 +9,7 @@ namespace LibraryMS.Core.Application.Dtos.AccountRequest
         public required UserDto User { get; set; }
         public AccountRequestStatus Status { get; set; }
         public string? RejectionReason { get; set; }
-        public string? ReviewedBy { get; set; }
+        public UserDto? ReviewedBy { get; set; }
         public DateTime? ReviewedAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

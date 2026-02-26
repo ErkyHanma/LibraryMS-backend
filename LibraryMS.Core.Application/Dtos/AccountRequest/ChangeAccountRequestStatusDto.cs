@@ -3,6 +3,7 @@
     public class ChangeAccountRequestStatusDto
     {
         public required string Status { get; set; }
+        public required string UserId { get; set; }
         public string? RejectionReason { get; set; }
     }
 }

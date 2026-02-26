@@ -28,8 +28,8 @@ namespace LibraryMS.Core.Application.Services
             _mapper = mapper;
         }
 
-        // Get all account requests with pagination, filtering by status, and sorting
-        public async Task<PaginatedResult<AccountRequestDto>> GetAllAsync(string? status, string? order = "desc", int page = 1, int limit = 10)
+        // Get all account requests with search, pagination, filtering by status, and sorting
+        public async Task<PaginatedResult<AccountRequestDto>> GetAllAsync(string? search, string? status, string? order = "desc", int page = 1, int limit = 10)
         {
 
             // Validate parameters
@@ -57,6 +57,15 @@ namespace LibraryMS.Core.Application.Services
                 }
 
 
+            // search by users name or last name
+            if (!string.IsNullOrEmpty(search))
+            {
+                // get IDs of users matching the search term (by name or last name)
+                var users = await _userService.GetUserIds(search);
+                query = query.Where(ar => users.Contains(ar.UserId));
+            }
+
+
             // Get total 
             var total = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(total / (double)limit);
@@ -77,15 +86,22 @@ namespace LibraryMS.Core.Application.Services
             foreach (var accountRequest in items)
             {
                 // get for each borrow record the user information
-                var userDto = await _userService.GetById(accountRequest.UserId);
+                UserDto? userDto = await _userService.GetById(accountRequest.UserId);
+                if (userDto == null)
+                    continue;
+
+                UserDto? reviewerUserDto = null;
+                if (accountRequest.ReviewedBy != null)
+                    reviewerUserDto = await _userService.GetById(accountRequest.ReviewedBy);
 
                 var dto = new AccountRequestDto
                 {
                     AccountRequestId = accountRequest.AccountRequestId,
                     RejectionReason = accountRequest.RejectionReason,
                     ReviewedAt = accountRequest.ReviewedAt,
-                    ReviewedBy = accountRequest.ReviewedBy,
+                    ReviewedBy = reviewerUserDto,
                     CreatedAt = accountRequest.CreatedAt,
+                    Status = accountRequest.Status,
                     User = userDto
                 };
 
@@ -114,17 +130,22 @@ namespace LibraryMS.Core.Application.Services
                 return null;
 
             UserDto? userDto = await _userService.GetById(entity.UserId);
-
             if (userDto == null)
                 return null;
 
+
+            UserDto? reviewerUserDto = null;
+            if (entity.ReviewedBy != null)
+                reviewerUserDto = await _userService.GetById(entity.ReviewedBy);
+
             AccountRequestDto dto = _mapper.Map<AccountRequestDto>(entity);
             dto.User = userDto;
+            dto.ReviewedBy = reviewerUserDto;
 
             return dto;
         }
 
-        public async Task<bool> ChangeRequestStatusAsync(int accountRequestId, AccountRequestStatus status, string? rejectionReason)
+        public async Task<bool> ChangeRequestStatusAsync(int accountRequestId, AccountRequestStatus status, string userId, string? rejectionReason)
         {
             // Validate if account request exists
             var accountRequest = await _accountRequestRepository.GetByIdAsync(accountRequestId);
@@ -136,7 +157,7 @@ namespace LibraryMS.Core.Application.Services
             if (user == null)
                 throw ApiException.NotFound($"User associated with this request not found.");
 
-            var updatedRequest = await _accountRequestRepository.ChangeStatus(accountRequestId, status, rejectionReason);
+            var updatedRequest = await _accountRequestRepository.ChangeStatus(accountRequestId, status, userId, rejectionReason);
             if (updatedRequest == null)
                 return false;
 

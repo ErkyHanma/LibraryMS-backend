@@ -10,8 +10,11 @@ namespace LibraryMS.Core.Application.Mappings
         {
             CreateMap<AccountRequest, AccountRequestDto>()
                 .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.ReviewedBy, opt => opt.Ignore())
                 .ReverseMap()
-                .ForMember(dest => dest.UserId, opt => opt.Ignore());
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ReviewedBy, opt => opt.Ignore());
+
 
         }
     }

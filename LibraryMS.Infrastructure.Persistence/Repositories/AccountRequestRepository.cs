@@ -19,7 +19,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
         }
 
 
-        public async Task<AccountRequest?> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string? rejectionReason)
+        public async Task<AccountRequest?> ChangeStatus(int AccountRequestId, AccountRequestStatus status, string userId, string? rejectionReason)
         {
             try
             {
@@ -40,11 +40,13 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
                     case AccountRequestStatus.Approved:
                         entity.Status = AccountRequestStatus.Approved;
                         entity.ReviewedAt = DateTime.UtcNow;
+                        entity.ReviewedBy = userId;
                         entity.RejectionReason = rejectionReason;
                         break;
                     case AccountRequestStatus.Rejected:
                         entity.Status = AccountRequestStatus.Rejected;
                         entity.ReviewedAt = DateTime.UtcNow;
+                        entity.ReviewedBy = userId;
                         entity.RejectionReason = rejectionReason;
 
                         break;
