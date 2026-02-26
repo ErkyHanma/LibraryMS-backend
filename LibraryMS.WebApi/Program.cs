@@ -9,59 +9,80 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Controllers & JSON
+builder.Services
+    .AddControllers(options =>
+    {
+        options.Filters.Add(new ProducesAttribute("application/json"));
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressInferBindingSourcesForParameters = true;
+        options.SuppressMapClientErrors = true;
+    })
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
-builder.Services.AddControllers(opt =>
-{
-    opt.Filters.Add(new ProducesAttribute("application/json"));
-}).ConfigureApiBehaviorOptions(opt =>
-{
-    opt.SuppressInferBindingSourcesForParameters = true;
-    opt.SuppressMapClientErrors = true;
-}).AddJsonOptions(opt =>
-{
-    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-
-
-
-// Add services to the container.
+// Layers 
 builder.Services.AddPersistenceLayerIOC(builder.Configuration);
 builder.Services.AddIdentityLayerIocForWebApi(builder.Configuration);
 builder.Services.AddApplicationLayerIOC();
 builder.Services.AddSharedLayerIOC(builder.Configuration);
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+
 builder.Services.AddHealthChecks();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 
-
-// Documentation
+// Swagger & Versioning
 builder.Services.AddSwaggerExtension();
 builder.Services.AddApiVersioningExtension();
 builder.Services.AddApiVersioning();
+builder.Services.AddOpenApi();
+
+// CORS
+var frontendUrl = builder.Configuration.GetValue<string>("Frontend:Url");
+
+if (string.IsNullOrWhiteSpace(frontendUrl))
+    throw new ArgumentException("Frontend:Url is missing.");
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .WithOrigins(frontendUrl)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 
 var app = builder.Build();
 
-// Run seeds
 await app.Services.RunIdentitySeedAsync();
 await app.Services.RunLibrarySeedAsync();
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerExtensions(app);
     app.MapOpenApi();
 }
 
+app.UseCors();
+
 app.UseHttpsRedirection();
+
 app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.UseHealthChecks("/health");
 
 app.MapControllers();
