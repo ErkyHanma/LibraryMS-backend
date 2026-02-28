@@ -9,7 +9,7 @@ namespace LibraryMS.Infrastructure.Persistence.Repositories
     public class BookRepository : GenericRepository<Book>, IBookRepository
     {
 
-        private readonly LibraryMSContext _context;
+        private new readonly LibraryMSContext _context;
 
         public BookRepository(LibraryMSContext context) : base(context)
         {

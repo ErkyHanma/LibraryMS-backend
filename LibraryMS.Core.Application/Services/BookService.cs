@@ -241,6 +241,7 @@ namespace LibraryMS.Core.Application.Services
             }
         }
 
+        // Soft Delete
         public async Task<bool> DeleteAsync(int id)
         {
             var existingBook = await _bookRepository.GetByIdAsync(id);
@@ -248,14 +249,38 @@ namespace LibraryMS.Core.Application.Services
             if (existingBook == null)
                 throw ApiException.NotFound($"Book with ID {id} not found");
 
+            // If book it's borrowed
+            if (existingBook.AvailableCopies < existingBook.TotalCopies)
+                throw ApiException.BadRequest("Book has active borrow records and cannot be deleted");
 
-            var result = await _bookRepository.DeleteAsync(id);
 
-            if (result) // If delete success delete image from cloudinary
-                await _cloudinaryService.DeleteImageAsync(existingBook.CoverImageKey);
+            existingBook.DeletedAt = DateTime.UtcNow;
+            var result = await _bookRepository.EditAsync(id, existingBook);
 
+            if (result == null)
+                return false;
 
             return true;
         }
+
+
+        // Delete Entity
+
+        //public async Task<bool> DeleteAsync(int id)
+        //{
+        //    var existingBook = await _bookRepository.GetByIdAsync(id);
+
+        //    if (existingBook == null)
+        //        throw ApiException.NotFound($"Book with ID {id} not found");
+
+
+        //    var result = await _bookRepository.DeleteAsync(id);
+
+        //    if (result) // If delete success delete image from cloudinary
+        //        await _cloudinaryService.DeleteImageAsync(existingBook.CoverImageKey);
+
+
+        //    return true;
+        //}
     }
 }

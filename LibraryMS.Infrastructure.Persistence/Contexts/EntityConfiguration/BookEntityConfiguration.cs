@@ -40,6 +40,9 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
 
             builder.Property(b => b.AvailableCopies)
                 .HasDefaultValue(0);
+
+            builder.HasQueryFilter(b => b.DeletedAt == null);
+
             #endregion
 
             #region relationships
@@ -47,6 +50,8 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
                 .WithOne(br => br.Book)
                 .HasForeignKey(br => br.BookId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
             #endregion
 
             #region Indexes

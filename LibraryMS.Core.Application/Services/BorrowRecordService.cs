@@ -38,7 +38,10 @@ namespace LibraryMS.Core.Application.Services
             if (limit < 1) limit = 10;
             if (limit > 100) limit = 100;
 
-            var query = _borrowRecordRepository.GetAllQueryWithInclude(["Book.BookCategories.Category"]);
+            var query = _borrowRecordRepository
+                .GetAllQueryWithInclude(["Book.BookCategories.Category"])
+                .IgnoreQueryFilters()
+                .Where(br => br.DeletedAt == null);
 
             // Filter by status
             if (!string.IsNullOrEmpty(status))
@@ -138,7 +141,10 @@ namespace LibraryMS.Core.Application.Services
 
             var query = _borrowRecordRepository
                .GetAllQueryWithInclude(["Book.BookCategories.Category"])
-               .Where(br => br.UserId == userId);
+               .IgnoreQueryFilters()
+               .Where(br => br.UserId == userId)
+               .Where(br => br.DeletedAt == null);
+
 
             // Filter by status
             if (!string.IsNullOrEmpty(status))

@@ -17,6 +17,9 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.Property(e => e.CreatedAt)
              .HasDefaultValueSql("CURRENT_TIMESTAMP")
              .ValueGeneratedOnAdd();
+
+            builder.HasQueryFilter(br => br.DeletedAt == null);
+
             #endregion
 
             #region Relationshipsz

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LibraryMS.Core.Application.Dtos.Base;
 using LibraryMS.Core.Application.Dtos.Category;
+using LibraryMS.Core.Application.Exceptions;
 using LibraryMS.Core.Application.Interfaces;
 using LibraryMS.Core.Domain.Entities;
 using LibraryMS.Core.Domain.Interfaces.Repositories;
@@ -132,10 +133,26 @@ namespace LibraryMS.Core.Application.Services
             return _mapper.Map<CategoryDto>(returnEntity);
         }
 
+        // Soft Delete
         public async Task<bool> DeleteAsync(int id)
         {
-            await _categoryRepository.DeleteAsync(id);
+            var currentCategory = await _categoryRepository.GetByIdAsync(id);
+
+            if (currentCategory == null)
+                throw ApiException.NotFound("Category not found");
+
+
+            currentCategory.DeletedAt = DateTime.UtcNow;
+            await _categoryRepository.EditAsync(id, currentCategory);
             return true;
         }
+
+
+        // Delete entity permanently
+        //public async Task<bool> DeleteAsync(int id)
+        //{
+        //    await _categoryRepository.DeleteAsync(id);
+        //    return true;
+        //}
     }
 }
