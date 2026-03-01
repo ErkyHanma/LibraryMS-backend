@@ -12,5 +12,7 @@ namespace LibraryMS.Core.Application.Dtos.Auth
         public required string UniversityId { get; set; }
         public required string ProfileImageUrl { get; set; }
         public required Roles Role { get; set; }
+        public required UserStatus Status { get; set; }
+
     }
 }

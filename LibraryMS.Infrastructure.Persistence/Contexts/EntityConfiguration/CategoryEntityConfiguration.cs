@@ -27,7 +27,8 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             builder.HasQueryFilter(c => c.DeletedAt == null);
 
             builder.HasIndex(c => c.Name)
-                .IsUnique();
+           .IsUnique()
+           .HasFilter("\"DeletedAt\" IS NULL"); // Only enforce uniqueness for active records
             #endregion
 
             #region Relationships

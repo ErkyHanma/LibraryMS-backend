@@ -18,6 +18,7 @@ namespace LibraryMS.Infrastructure.Shared.IOC
 
             #region Services IOC
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             #endregion
         }

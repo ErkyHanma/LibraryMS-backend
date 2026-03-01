@@ -27,7 +27,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
         private readonly JwtSettings _jwtSettings;
         private readonly IValidationService _validationService;
         private readonly IAccountRequestRepository _accountRequestRepository;
-
+        private readonly IEmailTemplateService _emailTemplateService;
 
         public AuthService(
             UserManager<User> userManager,
@@ -35,12 +35,14 @@ namespace LibraryMS.Infrastructure.Identity.Services
             IOptions<JwtSettings> jwtSettings,
             IAccountRequestRepository accountRequestRepository,
             IValidationService validationService,
+            IEmailTemplateService emailTemplateService,
             IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtSettings = jwtSettings.Value;
             _emailService = emailService;
+            _emailTemplateService = emailTemplateService;
             _validationService = validationService;
             _accountRequestRepository = accountRequestRepository;
         }
@@ -89,7 +91,9 @@ namespace LibraryMS.Infrastructure.Identity.Services
                     Email = user.Email ?? "",
                     UniversityId = user.UniversityId,
                     ProfileImageUrl = user.ProfileImageUrl ?? "",
-                    Role = role
+                    Role = role,
+                    Status = user.Status
+
                 },
                 AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
             };
@@ -160,19 +164,19 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 );
             }
 
+            var body = _emailTemplateService.Render("AccountCreated.html", new()
+                    {
+                        { "Name", newUser.Name },
+                        { "UniversityID", newUser.UniversityId }
+                    });
+
+
             // Send confirmation email
             await _emailService.SendAsync(new EmailRequestDto
             {
                 To = newUser.Email,
                 Subject = "Account Created - Pending Approval",
-                HtmlBody = $@"
-                    <h2>Welcome to the LibraryMS, {newUser.Name}!</h2>
-                    <p>Your account has been created successfully and is pending administrator approval.</p>
-                    <p>You now can access to the system and explere our book catalog.</p>
-                    <p>You will receive another email once your account has been approved.</p>
-                    <p><strong>University ID:</strong> {newUser.UniversityId}</p>
-                    <p>If you have any questions, please contact the library administration.</p>
-                "
+                HtmlBody = body
             });
 
             var userRoles = await _userManager.GetRolesAsync(newUser);
@@ -266,13 +270,6 @@ namespace LibraryMS.Infrastructure.Identity.Services
             {
                 return $"An error occurred while confirming this email {user.Email}";
             }
-
-        }
-
-        public async Task ReturnUser(string token)
-        {
-            var newToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-
 
         }
 

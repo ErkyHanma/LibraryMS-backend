@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="
+      margin: 0;
+      padding: 0;
+      background-color: #eef1f7;
+      font-family: sans-serif;
+    ">
+    <div style="max-width: 620px; margin: 48px auto; padding: 0 16px 48px">
+        <div style="
+          background-color: #25388c;
+          border-radius: 12px 12px 0 0;
+          padding: 32px 40px;
+          text-align: center;
+        ">
+            <p style="
+            margin: 0;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #a8b8e8;
+            font-weight: 500;
+          ">
+                Library Management System
+            </p>
+            <div style="
+            width: 40px;
+            height: 2px;
+            background: #a8b8e8;
+            margin: 12px auto;
+          "></div>
+        </div>
+
+        <!-- Main Card -->
+        <div style="
+          background: #ffffff;
+          padding: 44px 44px 36px;
+          box-shadow: 0 8px 32px rgba(37, 56, 140, 0.1);
+        ">
+            <div style="text-align: center; margin-bottom: 20px">
+                <span style="
+              display: inline-block;
+              background: #fff4f4;
+              color: #c0392b;
+              font-size: 11px;
+              font-weight: 500;
+              letter-spacing: 2px;
+              text-transform: uppercase;
+              padding: 6px 16px;
+              border-radius: 20px;
+              border: 1px solid #f5c6c6;
+            ">
+                    Request Rejected
+                </span>
+            </div>
+
+            <h1 style="
+            margin: 0 0 8px 0;
+            font-family:
+              Playfair Display,
+              Georgia,
+              serif;
+            font-size: 32px;
+            color: #1a2560;
+            text-align: center;
+          ">
+                We're sorry, {{Name}}.
+            </h1>
+            <p style="
+            margin: 0 0 28px 0;
+            text-align: center;
+            font-size: 15px;
+            color: #8492a6;
+          ">
+                Your account request has been reviewed and could not be approved at
+                this time.
+            </p>
+
+            <div style="
+            height: 1px;
+            background: linear-gradient(
+              to right,
+              transparent,
+              #dde3f4,
+              transparent
+            );
+            margin-bottom: 28px;
+          "></div>
+
+            <p style="
+            color: #374151;
+            font-size: 15px;
+            line-height: 1.75;
+            margin: 0 0 24px 0;
+          ">
+                After careful review, the administrator was unable to approve your
+                LibraryMS account request. Please see the reason below and don't
+                hesitate to reach out if you believe this decision was made in error.
+            </p>
+
+            <!-- Rejection Reason -->
+            <div style="
+            background: #fff8f8;
+            border-left: 4px solid #c0392b;
+            border-radius: 0 10px 10px 0;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+          ">
+                <p style="
+              margin: 0 0 6px 0;
+              font-size: 11px;
+              letter-spacing: 2px;
+              text-transform: uppercase;
+              color: #c0392b;
+              font-weight: 500;
+            ">
+                    Reason for Rejection
+                </p>
+                <p style="
+              margin: 0;
+              font-size: 15px;
+              color: #374151;
+              line-height: 1.6;
+              font-style: italic;
+            ">
+                    {{RejectionReason}}
+                </p>
+            </div>
+
+            <!-- Steps -->
+            <div style="
+            background: #f8f9fd;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+          ">
+                <p style="
+              margin: 0 0 14px 0;
+              font-size: 12px;
+              letter-spacing: 2px;
+              text-transform: uppercase;
+              color: #25388c;
+              font-weight: 500;
+            ">
+                    What you can do
+                </p>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                        <td style="padding-bottom: 10px">
+                            <span style="
+                    display: inline-block;
+                    width: 22px;
+                    height: 22px;
+                    background: #25388c;
+                    color: #fff;
+                    border-radius: 50%;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-align: center;
+                    line-height: 22px;
+                    margin-right: 10px;
+                  ">1</span>
+                            <span style="color: #374151; font-size: 14px">Review the rejection reason above</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 10px">
+                            <span style="
+                    display: inline-block;
+                    width: 22px;
+                    height: 22px;
+                    background: #25388c;
+                    color: #fff;
+                    border-radius: 50%;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-align: center;
+                    line-height: 22px;
+                    margin-right: 10px;
+                  ">2</span>
+                            <span style="color: #374151; font-size: 14px">Contact administration if you believe this is a mistake</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span style="
+                    display: inline-block;
+                    width: 22px;
+                    height: 22px;
+                    background: #25388c;
+                    color: #fff;
+                    border-radius: 50%;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-align: center;
+                    line-height: 22px;
+                    margin-right: 10px;
+                  ">3</span>
+                            <span style="color: #374151; font-size: 14px">
+                                You may resubmit a new request within
+                                <strong>15 days</strong>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Reapply Timer -->
+            <div style="
+            background: linear-gradient(135deg, #25388c 0%, #3a52c4 100%);
+            border-radius: 10px;
+            padding: 18px 24px;
+          ">
+                <svg width="20"
+                     height="20"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     xmlns="http://www.w3.org/2000/svg"
+                     style="vertical-align: middle; margin-right: 14px">
+                    <circle cx="12" cy="12" r="9" stroke="#a8b8e8" stroke-width="2" />
+                    <path d="M12 7v5l3 3"
+                          stroke="#ffffff"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round" />
+                </svg>
+                <span style="
+              font-size: 11px;
+              letter-spacing: 2px;
+              text-transform: uppercase;
+              color: #a8b8e8;
+              font-weight: 500;
+              vertical-align: middle;
+            ">Reapplication Window &nbsp;�&nbsp;</span>
+                <span style="
+              font-size: 15px;
+              color: #ffffff;
+              font-weight: 500;
+              vertical-align: middle;
+            ">New request allowed within <strong>15 days</strong></span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="
+          background: #f0f2f8;
+          border-radius: 0 0 12px 12px;
+          padding: 20px 40px;
+          text-align: center;
+        ">
+            <p style="margin: 0; font-size: 13px; color: #8492a6; line-height: 1.6">
+                Have questions or think this was a mistake?<br />
+            </p>
+        </div>
+    </div>
+</body>
+</html>

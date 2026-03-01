@@ -17,14 +17,16 @@ namespace LibraryMS.Core.Application.Services
         private readonly IAccountRequestRepository _accountRequestRepository;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly IEmailTemplateService _emailTemplateService;
         private readonly IMapper _mapper;
 
 
-        public AccountRequestService(IAccountRequestRepository accountRequestRepository, IUserService userService, IEmailService emailService, IMapper mapper)
+        public AccountRequestService(IAccountRequestRepository accountRequestRepository, IUserService userService, IEmailService emailService, IEmailTemplateService emailTemplateService, IMapper mapper)
         {
             _accountRequestRepository = accountRequestRepository;
             _userService = userService;
             _emailService = emailService;
+            _emailTemplateService = emailTemplateService;
             _mapper = mapper;
         }
 
@@ -167,25 +169,16 @@ namespace LibraryMS.Core.Application.Services
 
             // Send confirmation email
             var subject = status == AccountRequestStatus.Approved ? "Account Approved" : "Account Rejected";
-            var body = status == AccountRequestStatus.Approved ?
-                $@"
-                    <h1>LibraryMS</h1>
-                    <h2>Congratulations, {user.Name}!</h2>
-                    <p>Your account has been approved by the administrator.</p>
-                    <p>You can now log in to the LibraryMS using your registered email.</p>
-                    <p><strong>University ID:</strong> {user.UniversityId}</p>
-                    <p>We look forward to serving you in your academic journey!</p>
-                "
-                :
-                $@"
-                <h1>LibraryMS</h1>
-                    <h2>Account Request Rejected, {user.Name}</h2>
-                    <p>We regret to inform you that your account request has been rejected by the administrator.</p>
-                    <p><strong>Reason for Rejection:</strong> {rejectionReason}</p>
-                    <p>You can send another request within 15 days</p>
-                    <p>If you have any questions or believe this is a mistake, please contact the library administration for further assistance.</p>  
-                ";
-
+            var body = status == AccountRequestStatus.Approved
+                ? _emailTemplateService.Render("AccountApproved.html", new()
+                    {
+                        { "Name", user.Name }
+                    })
+                : _emailTemplateService.Render("AccountRejected.html", new()
+                    {
+                        { "Name", user.Name },
+                        { "RejectionReason", rejectionReason ?? "" }
+                    });
 
             await _emailService.SendAsync(new EmailRequestDto
             {

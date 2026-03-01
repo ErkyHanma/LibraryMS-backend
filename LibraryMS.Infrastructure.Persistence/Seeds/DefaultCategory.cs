@@ -9,7 +9,8 @@ public static class DefaultCategory
         foreach (var categoryName in categories)
         {
             var exists = await context.Categories
-                .AnyAsync(c => c.Name == categoryName);
+                .IgnoreQueryFilters()
+                .AnyAsync(c => c.Name == categoryName && c.DeletedAt == null || c.Name == categoryName && c.DeletedAt != null);
 
             if (!exists)
             {
