@@ -73,26 +73,23 @@ namespace LibraryMS.Infrastructure.Identity.IOC
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromMinutes(2),
+                    ClockSkew = TimeSpan.Zero,
                     ValidIssuer = config["JwtSettings:Issuer"],
                     ValidAudience = config["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"] ?? ""))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"] ?? "")),
                 };
                 opt.Events = new JwtBearerEvents()
                 {
-                    OnAuthenticationFailed = af =>
-                    {
-                        af.NoResult();
-                        af.Response.StatusCode = 500;
-                        af.Response.ContentType = "text/plain";
-                        return af.Response.WriteAsync(af.Exception.Message.ToString());
-                    },
                     OnChallenge = c =>
                     {
                         c.HandleResponse();
                         c.Response.StatusCode = 401;
                         c.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject(new JwtResponseDto { HasError = true, Error = "You are not Authorized" });
+                        var result = JsonConvert.SerializeObject(new JwtResponseDto
+                        {
+                            HasError = true,
+                            Error = "You are not Authorized"
+                        });
                         return c.Response.WriteAsync(result);
                     },
                     OnForbidden = c =>

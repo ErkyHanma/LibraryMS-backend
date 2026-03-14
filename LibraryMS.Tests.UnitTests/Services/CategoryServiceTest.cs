@@ -231,16 +231,16 @@ namespace LibraryMS.Tests.UnitTests.Services
 
 
         [Fact]
-        public async Task DeleteAsync_Should_Return_True_When_Category_Does_Not_Exist()
+        public async Task DeleteAsync_Should_Throw_When_Category_Does_Not_Exist()
         {
             // Arrange
             var service = CreateService();
 
             // Act
-            var result = await service.DeleteAsync(999);
+            Func<Task> act = async () => await service.DeleteAsync(999);
 
             // Assert
-            result.Should().BeTrue();
+            await act.Should().ThrowAsync<Core.Application.Exceptions.ApiException>();
         }
 
     }

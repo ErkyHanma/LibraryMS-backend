@@ -27,6 +27,10 @@ namespace LibraryMS.WebApi.Handlers
                             exceptionTitle = "Not found";
                             httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                             break;
+                        case (int)HttpStatusCode.Unauthorized:
+                            exceptionTitle = "Unauthorized";
+                            httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            break;
                         case (int)HttpStatusCode.Forbidden:
                             exceptionTitle = "Forbidden";
                             httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;

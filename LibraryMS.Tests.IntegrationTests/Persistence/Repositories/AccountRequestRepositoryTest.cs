@@ -261,7 +261,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
             var result = await repository.ChangeStatus(
                 request.AccountRequestId,
                 AccountRequestStatus.Approved,
-                null);
+                null, null);
 
             // Assert
             result.Should().NotBeNull();
@@ -286,6 +286,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
             var result = await repository.ChangeStatus(
                 request.AccountRequestId,
                 AccountRequestStatus.Rejected,
+                null,
                 rejectionReason);
 
             // Assert
@@ -304,7 +305,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
 
             // Act
             Func<Task> act = async () =>
-                await repository.ChangeStatus(999, AccountRequestStatus.Approved, null);
+                await repository.ChangeStatus(999, AccountRequestStatus.Approved, null, null);
 
             // Assert
             await act.Should().ThrowAsync<ApiException>()
@@ -327,6 +328,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
                 await repository.ChangeStatus(
                     request.AccountRequestId,
                     AccountRequestStatus.Rejected,
+                    null,
                     "Too late");
 
             // Assert
@@ -350,6 +352,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
                 await repository.ChangeStatus(
                     request.AccountRequestId,
                     AccountRequestStatus.Pending,
+                    null,
                     null);
 
             // Assert
@@ -373,6 +376,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
                 await repository.ChangeStatus(
                     request.AccountRequestId,
                     (AccountRequestStatus)999,
+                    null,
                     null);
 
             // Assert

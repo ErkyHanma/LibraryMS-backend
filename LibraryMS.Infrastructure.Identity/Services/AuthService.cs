@@ -6,6 +6,7 @@ using LibraryMS.Core.Domain.Common.Enum;
 using LibraryMS.Core.Domain.Entities;
 using LibraryMS.Core.Domain.Interfaces.Repositories;
 using LibraryMS.Core.Domain.Settings;
+using LibraryMS.Infrastructure.Identity.Contexts;
 using LibraryMS.Infrastructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -14,13 +15,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace LibraryMS.Infrastructure.Identity.Services
 {
     public class AuthService : IAuthService
     {
-
+        private readonly IdentityContext _context;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailService _emailService;
@@ -30,6 +32,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
         private readonly IEmailTemplateService _emailTemplateService;
 
         public AuthService(
+            IdentityContext context,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IOptions<JwtSettings> jwtSettings,
@@ -38,6 +41,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
             IEmailTemplateService emailTemplateService,
             IEmailService emailService)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtSettings = jwtSettings.Value;
@@ -74,8 +78,35 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 throw ApiException.Unauthorized("Invalid email or password.");
             }
 
-
             JwtSecurityToken jwtSecurityToken = await GenerateJwtToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            var existing = await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
+
+            if (existing != null)
+            {
+                // UPDATE existing refresh token 
+                existing.Token = newRefreshToken;
+                existing.Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
+            }
+            else
+            {
+                RefreshToken refreshToken = new()
+                {
+                    Id = Guid.NewGuid(),
+                    Token = newRefreshToken,
+                    Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime),
+                    UserId = user.Id
+                };
+
+                _context.RefreshTokens.Add(refreshToken);
+            }
+
+            await _context.SaveChangesAsync();
+
+
+
             var roleString = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
             if (!Enum.TryParse<Roles>(roleString, out var role))
@@ -85,7 +116,7 @@ namespace LibraryMS.Infrastructure.Identity.Services
             {
                 User = new AuthUserDto
                 {
-                    Id = user.Id ?? "",
+                    Id = user.Id,
                     Name = user.Name,
                     LastName = user.LastName,
                     Email = user.Email ?? "",
@@ -95,10 +126,45 @@ namespace LibraryMS.Infrastructure.Identity.Services
                     Status = user.Status
 
                 },
-                AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+                RefreshToken = newRefreshToken,
             };
 
             return response;
+        }
+
+        public async Task<LoginRefreshTokenResponseDto> LoginUserWithRefreshTokenAsync(string refreshTokenRequest)
+        {
+            RefreshToken? refreshToken = await _context.RefreshTokens
+                .Include(rt => rt.User)
+                .FirstOrDefaultAsync(rt => rt.Token == refreshTokenRequest);
+
+            if (refreshToken is null || refreshToken.Expires < DateTime.UtcNow)
+            {
+                throw ApiException.Unauthorized("Invalid or expired refresh token.");
+            }
+
+            string accesstoken = new JwtSecurityTokenHandler().WriteToken(await GenerateJwtToken(refreshToken.User!));
+
+            refreshToken.Token = GenerateRefreshToken();
+            refreshToken.Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
+
+            await _context.SaveChangesAsync();
+
+            return new LoginRefreshTokenResponseDto
+            {
+                AccessToken = accesstoken,
+                RefreshToken = refreshToken.Token
+            };
+        }
+
+        public async Task<bool> RevokeRefreshTokenAsync(string userId)
+        {
+            await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            return true;
         }
 
         public async Task<SignUpResponseDto> SignUpAsync(SignUpDto dto)
@@ -300,11 +366,15 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationTime),
                 signingCredentials: signingCredentials
             );
 
             return jwtSecurityToken;
+        }
+        private string GenerateRefreshToken()
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         }
         protected async Task<string?> GetVerificationEmailToken(User user)
         {

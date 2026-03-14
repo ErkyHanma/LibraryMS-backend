@@ -65,6 +65,36 @@ namespace LibraryMS.WebApi.Controllers.v1
             return Ok(user);
         }
 
+        [HttpPost("refresh-token")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginRefreshTokenResponseDto))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> LoginWithRefreshToken([FromBody] LoginRefreshTokenRequestDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            return Ok(await _authService.LoginUserWithRefreshTokenAsync(dto.RefreshToken));
+        }
+
+        [HttpPost("revoke")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Revoke()
+        {
+            var currentUserId = User.FindFirst("uid")?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
+
+
+            return await _authService.RevokeRefreshTokenAsync(currentUserId) ? NoContent() : BadRequest();
+
+        }
+
     }
 }
 

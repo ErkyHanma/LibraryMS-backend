@@ -209,7 +209,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
 
             // Assert
             await act.Should().ThrowAsync<ApiException>()
-                        .WithMessage($"Cannot borrow book '{book.Title}' (ID: {book.BookId}): No copies available");
+                        .WithMessage($"Cannot borrow book '{book.Title}'. No copies available");
         }
 
         [Fact]

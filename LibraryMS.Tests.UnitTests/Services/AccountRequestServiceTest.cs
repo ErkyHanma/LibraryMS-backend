@@ -19,6 +19,7 @@ namespace LibraryMS.Tests.UnitTests.Services
     {
         private readonly DbContextOptions<LibraryMSContext> _dbContextOptions;
         private readonly Mock<IEmailService> _emailService;
+        private readonly Mock<IEmailTemplateService> _emailTemplateService;
         private readonly Mock<IUserService> _userServiceMock;
         private readonly IMapper _mapper;
 
@@ -35,6 +36,7 @@ namespace LibraryMS.Tests.UnitTests.Services
 
             _mapper = config.CreateMapper();
             _emailService = new Mock<IEmailService>();
+            _emailTemplateService = new Mock<IEmailTemplateService>();
             _userServiceMock = new Mock<IUserService>();
         }
 
@@ -49,6 +51,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 accountRequestRepo,
                 _userServiceMock.Object,
                 _emailService.Object,
+                _emailTemplateService.Object,
                 _mapper
             );
         }
@@ -102,7 +105,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 .ReturnsAsync(CreateUserDto());
 
             // Act
-            var result = await service.GetAllAsync(null);
+            var result = await service.GetAllAsync(null, null);
 
             // Assert
             result.Should().NotBeNull();
@@ -129,7 +132,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 .ReturnsAsync(CreateUserDto());
 
             // Act
-            var result = await service.GetAllAsync("approved");
+            var result = await service.GetAllAsync(null, "approved");
 
             // Assert
             result.Data.Should().HaveCount(1);
@@ -202,6 +205,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             var result = await service.ChangeRequestStatusAsync(
                 request.AccountRequestId,
                 AccountRequestStatus.Approved,
+                null,
                 null);
 
             // Assert
@@ -239,6 +243,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             var result = await service.ChangeRequestStatusAsync(
                 request.AccountRequestId,
                 AccountRequestStatus.Rejected,
+                null,
                 "Invalid data");
 
             // Assert
@@ -254,7 +259,7 @@ namespace LibraryMS.Tests.UnitTests.Services
 
             // Act
             Func<Task> act = () =>
-                service.ChangeRequestStatusAsync(999, AccountRequestStatus.Approved, null);
+                service.ChangeRequestStatusAsync(999, AccountRequestStatus.Approved, null, null);
 
             // Assert
             await act.Should().ThrowAsync<ApiException>()
