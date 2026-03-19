@@ -1,0 +1,82 @@
+name: Deploy to Azure
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  CONTAINER_APP_NAME: libraryms
+  RESOURCE_GROUP: LibraryMSResource
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lowercase the repo name and username
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }}
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az extension add --name containerapp --upgrade
+
+            az containerapp registry set \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --server ghcr.io \
+              --username ${{ github.actor }} \
+              --password ${{ secrets.GHCR_PAT }}
+
+            az containerapp secret set \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --secrets \
+                "db-connection-string=${{ secrets.NEON_CONNECTION_STRING }}" \
+                "jwt-key=${{ secrets.JWT_SECRET }}" \
+                "cloudinary-name=${{ secrets.CLOUDINARY_NAME }}" \
+                "cloudinary-apikey=${{ secrets.CLOUDINARY_API_KEY }}" \
+                "cloudinary-apisecret=${{ secrets.CLOUDINARY_API_SECRET }}" \
+                "cloudinary-url=${{ secrets.CLOUDINARY_URL }}"    
+
+            az containerapp update \
+              --name ${{ env.CONTAINER_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }} \
+              --replace-env-vars \
+                "ConnectionStrings__DefaultConnection=secretref:db-connection-string" \
+                "JwtSettings__SecretKey=secretref:jwt-key" \
+                "Cloudinary__CloudName=secretref:cloudinary-name" \
+                "Cloudinary__ApiKey=secretref:cloudinary-apikey" \
+                "Cloudinary__ApiSecret=secretref:cloudinary-apisecret" \
+                "Cloudinary__CLOUDINARY_URL=secretref:cloudinary-url" \
+                "Frontend__Url=${{ secrets.FRONTEND_URL }}"
