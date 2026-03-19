@@ -5,6 +5,7 @@
     <RootNamespace>LibraryMS.Infrastructure.Persistence</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>2b34757a-d54b-46c7-8f05-0fa38d43b095</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

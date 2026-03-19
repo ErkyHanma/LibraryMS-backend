@@ -5,6 +5,7 @@
     <RootNamespace>LibraryMS.Infrastructure.Shared</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>f502ad39-1228-4e76-9305-25e2d5f6406d</UserSecretsId>
   </PropertyGroup>
 
 	<ItemGroup>
