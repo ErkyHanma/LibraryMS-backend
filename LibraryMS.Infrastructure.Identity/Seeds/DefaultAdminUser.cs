@@ -2,12 +2,13 @@
 using LibraryMS.Infrastructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace LibraryMS.Infrastructure.Identity.Seeds
 {
     public static class DefaultAdminUser
     {
-        public static async Task SeedAsync(UserManager<User> userManager)
+        public static async Task SeedAsync(UserManager<User> userManager, IConfiguration config)
         {
             var user = new User
             {
@@ -23,12 +24,14 @@ namespace LibraryMS.Infrastructure.Identity.Seeds
 
             };
 
+            var password = config.GetValue<string>("Password:DefaultPassword");
+
             if (await userManager.Users.AllAsync(u => u.Id != user.Id))
             {
                 if (!await userManager.Users
-                    .AnyAsync(u => u.Email == user.Email || u.UniversityId == user.UniversityId))
+                    .AnyAsync(u => u.Email == user.Email || u.UniversityId == user.UniversityId) && password != null)
                 {
-                    await userManager.CreateAsync(user, "Pa$$word123");
+                    await userManager.CreateAsync(user, password);
                     await userManager.AddToRoleAsync(user, Roles.Admin.ToString());
                 }
             }

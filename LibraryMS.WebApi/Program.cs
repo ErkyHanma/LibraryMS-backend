@@ -65,7 +65,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-await app.Services.RunIdentitySeedAsync();
+await app.Services.RunIdentitySeedAsync(builder.Configuration);
 await app.Services.RunLibrarySeedAsync();
 
 if (app.Environment.IsDevelopment())

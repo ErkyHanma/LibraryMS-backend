@@ -117,7 +117,7 @@ namespace LibraryMS.Infrastructure.Identity.IOC
         }
 
         #region Seeds
-        public static async Task RunIdentitySeedAsync(this IServiceProvider service)
+        public static async Task RunIdentitySeedAsync(this IServiceProvider service, IConfiguration config)
         {
             using var scope = service.CreateScope();
             var servicesProvider = scope.ServiceProvider;
@@ -126,8 +126,9 @@ namespace LibraryMS.Infrastructure.Identity.IOC
             var roleManager = servicesProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             await DefaultRoles.SeedAsync(roleManager);
-            await DefaultAdminUser.SeedAsync(userManager);
-            await DefaultUser.SeedAsync(userManager);
+            await DefaultAdminUser.SeedAsync(userManager, config);
+            await DefaultUser.SeedAsync(userManager, config);
+            await DefaultDemoUser.SeedAsync(userManager);
         }
         #endregion
 
