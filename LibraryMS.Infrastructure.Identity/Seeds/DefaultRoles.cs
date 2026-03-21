@@ -7,7 +7,7 @@ namespace LibraryMS.Infrastructure.Identity.Seeds
     {
         public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
         {
-            var roles = new[] { Roles.User, Roles.Admin };
+            var roles = new[] { Roles.User, Roles.Admin, Roles.Demo };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role.ToString()))

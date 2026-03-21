@@ -7,5 +7,7 @@ namespace LibraryMS.Core.Domain.Common.Enum
     {
         Admin,
         User,
+        Demo // Just for demo purpose.
+             // Represents a user who can only view books and borrow records, but cannot perform any actions like creating, updating, or deleting.
     }
 }

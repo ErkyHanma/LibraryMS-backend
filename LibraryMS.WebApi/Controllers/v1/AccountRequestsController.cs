@@ -54,7 +54,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
-        // GET
+        // PATCH
         [HttpPatch("{id}/change-status")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

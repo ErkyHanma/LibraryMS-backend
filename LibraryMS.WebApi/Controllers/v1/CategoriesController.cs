@@ -20,7 +20,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllCategories()
@@ -31,7 +31,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("pagination")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllCategoriesWithPagination(
@@ -48,7 +48,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("popular")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPopularCategories([FromQuery] int limit = 10)
@@ -59,7 +59,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -76,6 +76,8 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
+
+        // POST
         [HttpPost]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CategoryDto))]
@@ -94,6 +96,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
 
+        // PUT
         [HttpPut("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CategoryDto))]
@@ -110,6 +113,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
+        // DELETE
         [HttpDelete("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

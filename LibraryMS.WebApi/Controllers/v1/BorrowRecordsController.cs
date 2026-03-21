@@ -19,7 +19,6 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -38,7 +37,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("user/{userId}")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBorrowRecordByUserId(
@@ -56,7 +55,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBorrowRecordById(int id)
@@ -70,6 +69,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
 
+        // POST
         [HttpPost]
         [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(BorrowRecordDto))]
@@ -89,6 +89,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
+        // PATCH
         [HttpPatch("{id}/return")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

@@ -78,6 +78,8 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 throw ApiException.Unauthorized("Invalid email or password.");
             }
 
+            var isDemoUser = await _userManager.IsInRoleAsync(user, Roles.Demo.ToString());
+
             JwtSecurityToken jwtSecurityToken = await GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
 
@@ -88,7 +90,8 @@ namespace LibraryMS.Infrastructure.Identity.Services
             {
                 // UPDATE existing refresh token 
                 existing.Token = newRefreshToken;
-                existing.Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
+                existing.Expires = isDemoUser ? DateTime.UtcNow.AddMinutes(60)
+                                              : DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
             }
             else
             {
@@ -96,7 +99,8 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 {
                     Id = Guid.NewGuid(),
                     Token = newRefreshToken,
-                    Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime),
+                    Expires = isDemoUser ? DateTime.UtcNow.AddMinutes(60)
+                                         : DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime),
                     UserId = user.Id
                 };
 
@@ -140,14 +144,14 @@ namespace LibraryMS.Infrastructure.Identity.Services
                 .FirstOrDefaultAsync(rt => rt.Token == refreshTokenRequest);
 
             if (refreshToken is null || refreshToken.Expires < DateTime.UtcNow)
-            {
                 throw ApiException.Unauthorized("Invalid or expired refresh token.");
-            }
 
+            var isDemoUser = await _userManager.IsInRoleAsync(refreshToken.User!, Roles.Demo.ToString());
             string accesstoken = new JwtSecurityTokenHandler().WriteToken(await GenerateJwtToken(refreshToken.User!));
 
             refreshToken.Token = GenerateRefreshToken();
-            refreshToken.Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
+            refreshToken.Expires = isDemoUser ? DateTime.UtcNow.AddMinutes(60)
+                                              : DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationTime);
 
             await _context.SaveChangesAsync();
 
