@@ -17,7 +17,7 @@ namespace LibraryMS.WebApi.Controllers.v1
             _userService = userService;
         }
 
-
+        // GET
         [HttpGet]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserListDto))]
@@ -35,7 +35,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
 
-
+        // GET
         [HttpGet("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
@@ -51,8 +51,9 @@ namespace LibraryMS.WebApi.Controllers.v1
             return Ok(user);
         }
 
+        // GET
         [HttpGet("{id}/profile")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)} ")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserProfileDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -66,6 +67,7 @@ namespace LibraryMS.WebApi.Controllers.v1
             return Ok(user);
         }
 
+        // PUT
         [HttpPut("{id}/profile")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
         [Consumes("multipart/form-data")]
@@ -82,7 +84,7 @@ namespace LibraryMS.WebApi.Controllers.v1
             return Ok(user);
         }
 
-
+        // PATCH
         [HttpPatch("{id}/role")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -106,7 +108,7 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
 
-
+        // PATCH
         [HttpPatch("{id}/change-status")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

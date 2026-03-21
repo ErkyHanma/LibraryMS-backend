@@ -18,7 +18,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBooks(
@@ -39,7 +39,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("{id}")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -61,7 +61,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         // GET
         [HttpGet("category/{id}")]
-        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BookDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -76,7 +76,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
-
+        // POST
         [HttpPost]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [Consumes("multipart/form-data")]
@@ -95,7 +95,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
-
+        // PUT
         [HttpPut("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [Consumes("multipart/form-data")]
@@ -113,6 +113,7 @@ namespace LibraryMS.WebApi.Controllers.v1
 
         }
 
+        // DELETE
         [HttpDelete("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
