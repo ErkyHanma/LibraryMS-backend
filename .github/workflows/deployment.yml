@@ -1,6 +1,8 @@
 name: Test and Deploy to Azure
 
 on:
+  pull_request:
+    branches: ["main"]
   push:
     branches: ["main"]
   workflow_dispatch:
@@ -34,6 +36,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
