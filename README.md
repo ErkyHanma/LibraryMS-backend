@@ -1,6 +1,6 @@
 <div align="center">
 
-# LibraryMS Backend — University Library Management API
+# LibraryMS — University Library Management API
 
   <div>
     <img src="https://img.shields.io/badge/-.NET_9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" />
@@ -18,6 +18,8 @@
   </div>
 
 </div>
+
+<br/>
 
 LibraryMS Backend is a robust, enterprise-grade RESTful Web API built with **.NET 9**, designed to power all library operations for the LibraryMS platform. It implements **Clean Architecture** principles to ensure a clear separation of concerns, maintainability, and testability across all layers. The API handles complex business rules including borrow limits, soft-deletion of catalog items, a multi-stage user registration and approval workflow, and automated email notifications — serving as the reliable data and logic backbone for the frontend application.
 
@@ -157,6 +159,10 @@ Each layer exposes an extension method to `IServiceCollection` to register its o
 
 The system manages two EF Core contexts — `LibraryMSContext` for library data and `IdentityContext` for authentication — whose relationships are illustrated in the diagram below.
 
+<div align="center">
+<img width="900" alt="LibraryMS DB Diagram" src="https://github.com/user-attachments/assets/62236666-6fa2-4b8c-8d2b-a9281f8000de" />
+
+</div>
 
 
 ### Key Design Decisions
