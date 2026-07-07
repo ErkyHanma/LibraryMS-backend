@@ -88,7 +88,11 @@ jobs:
                 "cloudinary-name=${{ secrets.CLOUDINARY_NAME }}" \
                 "cloudinary-apikey=${{ secrets.CLOUDINARY_API_KEY }}" \
                 "cloudinary-apisecret=${{ secrets.CLOUDINARY_API_SECRET }}" \
-                "cloudinary-url=${{ secrets.CLOUDINARY_URL }}"    
+                "cloudinary-url=${{ secrets.CLOUDINARY_URL }}" \
+                "smtp-from=${{ secrets.SMTP_FROM }}" \
+                "smtp-user=${{ secrets.SMTP_USER }}" \
+                "smtp-pass=${{ secrets.SMTP_PASS }}"
+                
 
             az containerapp update \
               --name ${{ env.CONTAINER_APP_NAME }} \
@@ -101,4 +105,7 @@ jobs:
                 "Cloudinary__ApiKey=secretref:cloudinary-apikey" \
                 "Cloudinary__ApiSecret=secretref:cloudinary-apisecret" \
                 "Cloudinary__CLOUDINARY_URL=secretref:cloudinary-url" \
-                "Frontend__Url=${{ secrets.FRONTEND_URL }}"
+                "Frontend__Url=${{ secrets.FRONTEND_URL }}" \
+                "MailSettings__EmailFrom=secretref:smtp-from" \
+                "MailSettings__SmtpUser=secretref:smtp-user" \
+                "MailSettings__SmtpPass=secretref:smtp-pass"
