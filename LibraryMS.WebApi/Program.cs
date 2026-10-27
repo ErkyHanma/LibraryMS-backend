@@ -1,10 +1,13 @@
 using LibraryMS.Core.Application.IOC;
+using LibraryMS.Infrastructure.Identity.Contexts;
 using LibraryMS.Infrastructure.Identity.IOC;
+using LibraryMS.Infrastructure.Persistence.Contexts;
 using LibraryMS.Infrastructure.Persistence.IOC;
 using LibraryMS.Infrastructure.Shared.IOC;
 using LibraryMS.WebApi.Extensions;
 using LibraryMS.WebApi.Handlers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,7 +66,23 @@ builder.Services.AddCors(options =>
 });
 
 
+
 var app = builder.Build();
+
+if (!builder.Configuration.GetValue<bool>("UseInMemoryDatabase"))
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+
+    var identityContext =
+        services.GetRequiredService<IdentityContext>();
+
+    var libraryContext =
+        services.GetRequiredService<LibraryMSContext>();
+
+    await identityContext.Database.MigrateAsync();
+    await libraryContext.Database.MigrateAsync();
+}
 
 await app.Services.RunIdentitySeedAsync(builder.Configuration);
 await app.Services.RunLibrarySeedAsync();
