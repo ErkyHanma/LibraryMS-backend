@@ -105,6 +105,7 @@ namespace LibraryMS.Core.Application.Services
                 var dto = new BorrowRecordDto
                 {
                     BorrowRecordId = borrowRecord.BorrowRecordId,
+                    ReceiptId = borrowRecord.ReceiptId,
                     BorrowDate = borrowRecord.BorrowDate,
                     DueDate = borrowRecord.DueDate,
                     ReturnDate = borrowRecord.ReturnDate,
@@ -197,6 +198,7 @@ namespace LibraryMS.Core.Application.Services
                 var dto = new BorrowRecordDto
                 {
                     BorrowRecordId = borrowRecord.BorrowRecordId,
+                    ReceiptId = borrowRecord.ReceiptId,
                     BorrowDate = borrowRecord.BorrowDate,
                     DueDate = borrowRecord.DueDate,
                     ReturnDate = borrowRecord.ReturnDate,
@@ -238,6 +240,7 @@ namespace LibraryMS.Core.Application.Services
             var borrowRecordDto = new BorrowRecordDto
             {
                 BorrowRecordId = borrowRecord.BorrowRecordId,
+                ReceiptId = borrowRecord.ReceiptId,
                 BorrowDate = borrowRecord.BorrowDate,
                 DueDate = borrowRecord.DueDate,
                 ReturnDate = borrowRecord.ReturnDate,
@@ -249,6 +252,43 @@ namespace LibraryMS.Core.Application.Services
 
 
             return borrowRecordDto;
+        }
+
+        public async Task<BorrowRecordVerificationDto?> GetByReceiptIdAsync(string receiptId)
+        {
+            if (string.IsNullOrWhiteSpace(receiptId))
+                return null;
+
+            var normalizedReceiptId = receiptId.Trim();
+
+            var borrowRecord = await _borrowRecordRepository
+                .GetAllQueryWithInclude(["Book"])
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(br =>
+                    br.ReceiptId == normalizedReceiptId &&
+                    br.DeletedAt == null);
+
+            if (borrowRecord == null)
+                return null;
+
+            var userDto = await _userService.GetById(borrowRecord.UserId);
+
+            if (userDto == null)
+                return null;
+
+            return new BorrowRecordVerificationDto
+            {
+                BorrowRecordId = borrowRecord.BorrowRecordId,
+                ReceiptId = borrowRecord.ReceiptId,
+                UniversityId = userDto.UniversityId,
+                UserFullName = $"{userDto.Name} {userDto.LastName}".Trim(),
+                BookTitle = borrowRecord.Book?.Title ?? string.Empty,
+                BookAuthor = borrowRecord.Book?.Author ?? string.Empty,
+                BorrowDate = borrowRecord.BorrowDate,
+                DueDate = borrowRecord.DueDate,
+                ReturnDate = borrowRecord.ReturnDate,
+                IsOverdue = borrowRecord.ReturnDate == null && borrowRecord.DueDate < DateTime.UtcNow
+            };
         }
 
         public async Task<BorrowRecordDto?> AddBorrowRecordAsync(AddBorrowRecordDto dto)
@@ -282,6 +322,8 @@ namespace LibraryMS.Core.Application.Services
                 throw ApiException.BadRequest("User has already borrow this record");
 
             BorrowRecord borrowRecord = _mapper.Map<BorrowRecord>(dto);
+            borrowRecord.ReceiptId = $"BR-{borrowRecord.BorrowDate:yyyyMMdd}-{Guid.NewGuid():N}";
+
             BorrowRecord? returnEntity = await _borrowRecordRepository.AddAsync(borrowRecord);
 
             if (returnEntity == null)
@@ -290,6 +332,7 @@ namespace LibraryMS.Core.Application.Services
             return new BorrowRecordDto
             {
                 BorrowRecordId = returnEntity.BorrowRecordId,
+                ReceiptId = borrowRecord.ReceiptId,
                 BorrowDate = returnEntity.BorrowDate,
                 DueDate = returnEntity.DueDate,
                 ReturnDate = returnEntity.ReturnDate,

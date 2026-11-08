@@ -53,7 +53,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             );
         }
 
-        private static UserDto CreateUserDto(string id = "user-1")
+        private static UserDto CreateUserDto(string id = "user-1", string universityId = "")
         {
             return new UserDto
             {
@@ -63,7 +63,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 Email = "",
                 ProfileImageUrl = "",
                 Role = Roles.User,
-                UniversityId = "",
+                UniversityId = universityId,
                 Status = UserStatus.Approved,
             };
         }
@@ -97,6 +97,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             return new BorrowRecord
             {
                 BorrowRecordId = id,
+                ReceiptId = $"receipt-{id}",
                 UserId = userId,
                 BookId = bookId,
                 BorrowDate = DateTime.UtcNow.AddDays(-2),
@@ -214,6 +215,61 @@ namespace LibraryMS.Tests.UnitTests.Services
         }
 
         [Fact]
+        public async Task GetByReceiptIdAsync_Should_Return_Verification_Details_When_Exists()
+        {
+            var service = CreateService();
+            var context = new LibraryMSContext(_dbContextOptions);
+
+            context.Books.Add(CreateBook(1, "Clean Code", "Robert Martin"));
+            context.BorrowRecords.Add(CreateBorrowRecord(1));
+            await context.SaveChangesAsync();
+
+            _userServiceMock
+                .Setup(u => u.GetById("user-1"))
+                .ReturnsAsync(CreateUserDto("user-1", "uni-1"));
+
+            var result = await service.GetByReceiptIdAsync("receipt-1");
+
+            result.Should().NotBeNull();
+            result!.ReceiptId.Should().Be("receipt-1");
+            result.UniversityId.Should().Be("uni-1");
+            result.UserFullName.Should().Be("Test User");
+            result.BookTitle.Should().Be("Clean Code");
+            result.BookAuthor.Should().Be("Robert Martin");
+            result.IsOverdue.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetByReceiptIdAsync_Should_Flag_Overdue_Records()
+        {
+            var service = CreateService();
+            var context = new LibraryMSContext(_dbContextOptions);
+
+            context.Books.Add(CreateBook(1));
+            context.BorrowRecords.Add(CreateBorrowRecord(1, dueDate: DateTime.UtcNow.AddDays(-1)));
+            await context.SaveChangesAsync();
+
+            _userServiceMock
+                .Setup(u => u.GetById("user-1"))
+                .ReturnsAsync(CreateUserDto());
+
+            var result = await service.GetByReceiptIdAsync("receipt-1");
+
+            result.Should().NotBeNull();
+            result!.IsOverdue.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetByReceiptIdAsync_Should_Return_Null_When_Not_Found()
+        {
+            var service = CreateService();
+
+            var result = await service.GetByReceiptIdAsync("missing-receipt");
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
         public async Task AddBorrowRecordAsync_Should_Create_Record()
         {
             var service = CreateService();
@@ -242,6 +298,7 @@ namespace LibraryMS.Tests.UnitTests.Services
 
             result.Should().NotBeNull();
             result!.User!.Id.Should().Be("user-1");
+            result.ReceiptId.Should().NotBeNullOrEmpty();
         }
 
 

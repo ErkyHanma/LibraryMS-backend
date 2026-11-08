@@ -152,7 +152,11 @@ namespace LibraryMS.Infrastructure.Identity.IOC
                 services.AddDbContext<IdentityContext>(
                     (serviceProvider, options) =>
                     {
-                        options.EnableSensitiveDataLogging();
+                        if (config.GetValue<bool>("EnableSensitiveDataLogging"))
+                        {
+                            options.EnableSensitiveDataLogging();
+                        }
+
                         options.UseNpgsql(
                              connectionString,
                              options => options.MigrationsAssembly(typeof(IdentityContext).Assembly.FullName)

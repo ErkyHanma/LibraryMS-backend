@@ -54,6 +54,22 @@ namespace LibraryMS.WebApi.Controllers.v1
         }
 
         // GET
+        [HttpGet("receipt/{receiptId}")]
+        [Authorize(Roles = $"{nameof(Roles.Admin)}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordVerificationDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> VerifyReceipt(string receiptId)
+        {
+            var dto = await _borrowRecordService.GetByReceiptIdAsync(receiptId);
+
+            if (dto == null)
+                return NotFound($"Receipt with ID {receiptId} not found");
+
+            return Ok(dto);
+        }
+
+        // GET
         [HttpGet("{id}")]
         [Authorize(Roles = $"{nameof(Roles.Admin)}, {nameof(Roles.User)}, {nameof(Roles.Demo)}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(BorrowRecordDto))]

@@ -26,7 +26,11 @@ namespace LibraryMS.Infrastructure.Persistence.IOC
                 services.AddDbContext<LibraryMSContext>(
                     (serviceProvider, options) =>
                     {
-                        options.EnableSensitiveDataLogging();
+                        if (config.GetValue<bool>("EnableSensitiveDataLogging"))
+                        {
+                            options.EnableSensitiveDataLogging();
+                        }
+
                         options.UseNpgsql(
                              connectionString,
                              options => options.MigrationsAssembly(typeof(LibraryMSContext).Assembly.FullName)

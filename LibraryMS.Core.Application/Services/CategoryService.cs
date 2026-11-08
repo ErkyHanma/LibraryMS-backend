@@ -79,7 +79,6 @@ namespace LibraryMS.Core.Application.Services
         {
             var query = _categoryRepository.GetAllQuery()
                 .Include(c => c.BookCategories)
-                .Where(c => c.BookCategories != null && c.BookCategories.Count > 0)
                 .OrderByDescending(c => c.BookCategories!.Count);
 
             var items = await query.Take(limit).ToListAsync();

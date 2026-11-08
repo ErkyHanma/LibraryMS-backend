@@ -25,6 +25,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             return new BorrowRecord
             {
                 BorrowRecordId = id ?? 0,
+                ReceiptId = $"receipt-{id ?? 0}",
                 BookId = 1,
                 UserId = "test-user-id",
                 BorrowDate = DateTime.UtcNow,
@@ -75,6 +76,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 CreateBorrowRecord(),
                 new BorrowRecord
                 {
+                    ReceiptId = "receipt-2",
                     BookId = 1,
                     UserId = "user-2",
                     BorrowDate = DateTime.UtcNow.AddDays(-20),
@@ -83,6 +85,7 @@ namespace LibraryMS.Tests.UnitTests.Services
                 },
                 new BorrowRecord
                 {
+                    ReceiptId = "receipt-3",
                     BookId = 1,
                     UserId = "user-3",
                     BorrowDate = DateTime.UtcNow.AddDays(-30),

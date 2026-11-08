@@ -18,6 +18,9 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
              .HasDefaultValueSql("CURRENT_TIMESTAMP")
              .ValueGeneratedOnAdd();
 
+            builder.Property(br => br.ReceiptId)
+                .IsRequired();
+
             builder.HasQueryFilter(br => br.DeletedAt == null);
 
             #endregion
@@ -26,6 +29,8 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
             #endregion
 
             #region Indexes
+            builder.HasIndex(br => br.ReceiptId)
+                .IsUnique();
             #endregion
         }
     }

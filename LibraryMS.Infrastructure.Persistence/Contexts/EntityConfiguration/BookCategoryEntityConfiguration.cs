@@ -15,6 +15,10 @@ namespace LibraryMS.Infrastructure.Persistence.Contexts.EntityConfiguration
 
             #region Property configurations
 
+            builder.HasQueryFilter(bc =>
+                bc.Book!.DeletedAt == null &&
+                bc.Category!.DeletedAt == null);
+
             #endregion
 
             #region Relationships

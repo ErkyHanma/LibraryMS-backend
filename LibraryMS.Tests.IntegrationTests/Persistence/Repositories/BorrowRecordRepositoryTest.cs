@@ -23,6 +23,7 @@ namespace LibraryMS.Tests.IntegrationTests.Persistence.Repositories
             return new BorrowRecord
             {
                 BorrowRecordId = id ?? 0,
+                ReceiptId = $"receipt-{id ?? 0}",
                 BookId = 1,
                 UserId = "test-user-id",
 

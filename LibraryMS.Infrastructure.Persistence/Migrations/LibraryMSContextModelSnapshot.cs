@@ -172,6 +172,10 @@ namespace LibraryMS.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ReceiptId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -185,6 +189,9 @@ namespace LibraryMS.Infrastructure.Persistence.Migrations
                     b.HasKey("BorrowRecordId");
 
                     b.HasIndex("BookId");
+
+                    b.HasIndex("ReceiptId")
+                        .IsUnique();
 
                     b.ToTable("BorrowRecords", (string)null);
                 });
