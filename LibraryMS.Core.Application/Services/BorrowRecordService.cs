@@ -7,7 +7,9 @@ using LibraryMS.Core.Application.Interfaces;
 using LibraryMS.Core.Domain.Common.Enum;
 using LibraryMS.Core.Domain.Entities;
 using LibraryMS.Core.Domain.Interfaces.Repositories;
+using LibraryMS.Core.Domain.Settings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace LibraryMS.Core.Application.Services
 {
@@ -17,17 +19,20 @@ namespace LibraryMS.Core.Application.Services
         private readonly IUserService _userService;
         private readonly IValidationService _validationService;
         private readonly IMapper _mapper;
+        private readonly LoanPolicy _loanPolicy;
 
         public BorrowRecordService(
             IBorrowRecordRepository borrowRecordRepository,
             IUserService userService,
             IValidationService validationService,
-            IMapper mapper)
+            IMapper mapper,
+            IOptions<LoanPolicy> loanPolicy)
         {
             _borrowRecordRepository = borrowRecordRepository;
             _userService = userService;
             _validationService = validationService;
             _mapper = mapper;
+            _loanPolicy = loanPolicy.Value;
         }
 
 
@@ -297,8 +302,6 @@ namespace LibraryMS.Core.Application.Services
             // Validate DTO
             await _validationService.ValidateAsync(dto);
 
-            var MAX_USER_BORROW_LIMIT = 5;
-
             // check if user exists
             var userDto = await _userService.GetById(dto.UserId);
             if (userDto == null)
@@ -311,7 +314,7 @@ namespace LibraryMS.Core.Application.Services
             var userBorrowedRecordCount = await _borrowRecordRepository
                 .GetAllQuery().Where(br => br.UserId == dto.UserId && br.ReturnDate == null).CountAsync();
 
-            if (userBorrowedRecordCount >= MAX_USER_BORROW_LIMIT)
+            if (userBorrowedRecordCount >= _loanPolicy.MaxActiveBorrows)
                 throw ApiException.BadRequest("User has reached the maximum borrow limit");
 
             // check if the user has already borrowed the book and not returned it yet
@@ -323,6 +326,7 @@ namespace LibraryMS.Core.Application.Services
 
             BorrowRecord borrowRecord = _mapper.Map<BorrowRecord>(dto);
             borrowRecord.ReceiptId = $"BR-{borrowRecord.BorrowDate:yyyyMMdd}-{Guid.NewGuid():N}";
+            borrowRecord.DueDate = borrowRecord.BorrowDate.AddDays(_loanPolicy.LoanDays);
 
             BorrowRecord? returnEntity = await _borrowRecordRepository.AddAsync(borrowRecord);
 

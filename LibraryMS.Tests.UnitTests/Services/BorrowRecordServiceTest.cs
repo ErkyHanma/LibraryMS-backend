@@ -8,9 +8,11 @@ using LibraryMS.Core.Application.Mappings;
 using LibraryMS.Core.Application.Services;
 using LibraryMS.Core.Domain.Common.Enum;
 using LibraryMS.Core.Domain.Entities;
+using LibraryMS.Core.Domain.Settings;
 using LibraryMS.Infrastructure.Persistence.Contexts;
 using LibraryMS.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace LibraryMS.Tests.UnitTests.Services
@@ -40,7 +42,7 @@ namespace LibraryMS.Tests.UnitTests.Services
             _userServiceMock = new Mock<IUserService>();
         }
 
-        public BorrowRecordService CreateService()
+        public BorrowRecordService CreateService(LoanPolicy? loanPolicy = null)
         {
             var context = new LibraryMSContext(_dbContextOptions);
             var borrowRecordRepo = new BorrowRecordRepository(context);
@@ -49,7 +51,8 @@ namespace LibraryMS.Tests.UnitTests.Services
                 borrowRecordRepo,
                 _userServiceMock.Object,
                 _validationServiceMock.Object,
-                _mapper
+                _mapper,
+                Options.Create(loanPolicy ?? new LoanPolicy())
             );
         }
 
@@ -326,6 +329,66 @@ namespace LibraryMS.Tests.UnitTests.Services
             );
         }
 
+
+        [Fact]
+        public async Task AddBorrowRecordAsync_Should_Use_Configured_LoanDays_For_DueDate()
+        {
+            var service = CreateService(new LoanPolicy { LoanDays = 7, MaxActiveBorrows = 5 });
+            var context = new LibraryMSContext(_dbContextOptions);
+
+            context.Books.Add(CreateBook(1));
+            await context.SaveChangesAsync();
+
+            _validationServiceMock
+                .Setup(v => v.ValidateAsync(It.IsAny<AddBorrowRecordDto>()))
+                .Returns(Task.CompletedTask);
+
+            _userServiceMock
+                .Setup(u => u.GetById("user-1"))
+                .ReturnsAsync(CreateUserDto("user-1"));
+
+            var dto = new AddBorrowRecordDto
+            {
+                UserId = "user-1",
+                BookId = 1,
+                BorrowDate = DateTime.UtcNow
+            };
+
+            var result = await service.AddBorrowRecordAsync(dto);
+
+            result.Should().NotBeNull();
+            result!.DueDate.Should().BeCloseTo(dto.BorrowDate.AddDays(7), TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public async Task AddBorrowRecordAsync_Should_Enforce_Configured_MaxActiveBorrows()
+        {
+            var service = CreateService(new LoanPolicy { MaxActiveBorrows = 1 });
+            var context = new LibraryMSContext(_dbContextOptions);
+
+            context.Books.Add(CreateBook(1));
+            context.BorrowRecords.Add(CreateBorrowRecord(1, userId: "user-1"));
+            await context.SaveChangesAsync();
+
+            _validationServiceMock
+                .Setup(v => v.ValidateAsync(It.IsAny<AddBorrowRecordDto>()))
+                .Returns(Task.CompletedTask);
+
+            _userServiceMock
+                .Setup(u => u.GetById("user-1"))
+                .ReturnsAsync(CreateUserDto("user-1"));
+
+            var dto = new AddBorrowRecordDto
+            {
+                UserId = "user-1",
+                BookId = 1,
+                BorrowDate = DateTime.UtcNow
+            };
+
+            await Assert.ThrowsAsync<ApiException>(() =>
+                service.AddBorrowRecordAsync(dto)
+            );
+        }
 
         [Fact]
         public async Task ReturnBorrowedRecordAsync_Should_Return_True()

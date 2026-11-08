@@ -1,4 +1,5 @@
 using LibraryMS.Core.Application.IOC;
+using LibraryMS.Core.Domain.Settings;
 using LibraryMS.Infrastructure.Identity.Contexts;
 using LibraryMS.Infrastructure.Identity.IOC;
 using LibraryMS.Infrastructure.Persistence.Contexts;
@@ -33,6 +34,9 @@ builder.Services.AddPersistenceLayerIOC(builder.Configuration);
 builder.Services.AddIdentityLayerIocForWebApi(builder.Configuration);
 builder.Services.AddApplicationLayerIOC();
 builder.Services.AddSharedLayerIOC(builder.Configuration);
+
+// Settings
+builder.Services.Configure<LoanPolicy>(builder.Configuration.GetSection("LoanPolicy"));
 
 
 builder.Services.AddHealthChecks();

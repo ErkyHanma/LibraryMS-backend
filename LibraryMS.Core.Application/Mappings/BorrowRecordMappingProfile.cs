@@ -22,8 +22,7 @@
                 .ReverseMap()
                 .ForMember(dest => dest.BorrowRecordId, opt => opt.Ignore())
                 .ForMember(dest => dest.Book, opt => opt.Ignore())
-                .ForMember(dest => dest.DueDate,
-                    opt => opt.MapFrom(src => src.BorrowDate.AddDays(14))) // DueDate = BorrowDate + 14 days
+                .ForMember(dest => dest.DueDate, opt => opt.Ignore()) // Set from LoanPolicy in BorrowRecordService
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.ReturnDate, opt => opt.Ignore());
